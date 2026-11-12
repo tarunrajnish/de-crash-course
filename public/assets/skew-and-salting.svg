@@ -1,0 +1,235 @@
+<svg viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!--
+    Skew and salting, 12s loop (keyTimes below are fractions of the 12s dur, so they
+    double as seconds*~0.083). Two phases toggle via group opacity, each holds its
+    final frame before the next phase takes over, then the whole thing cuts back to
+    phase 1 at loop restart (the visible "pause" before reset).
+      Phase 1 (0 - 0.44 = 0 - 5.3s): hot key store_id=1042 piles into one reduce
+        partition; task-duration bars show one straggler and the stage barrier.
+      Phase 2 (0.46 - 1.0 = 5.5 - 12s): the hot key is salted, the small/dim side
+        is exploded across every salt value, partitions and task durations even out.
+    Simplification: only 6 rows total are shown per phase to keep the picture
+    readable; real skew is usually orders of magnitude larger.
+  -->
+  <defs>
+    <style>
+      text { fill: #1a202c; }
+      .title { font-size: 20px; font-weight: 700; }
+      .phaseLabel { font-size: 15px; font-weight: 700; }
+      .caption { font-size: 13px; fill: #2d3748; }
+      .sub { font-size: 12.5px; fill: #4a5568; }
+      .label { font-size: 12.5px; font-weight: 600; }
+      .chipHot { fill: #fed7d7; stroke: #c53030; stroke-width: 1.5; }
+      .chipNorm { fill: #bee3f8; stroke: #2b6cb0; stroke-width: 1.5; }
+      .chipSalt { fill: #e9d8fd; stroke: #6b46c1; stroke-width: 1.5; }
+      .partbox { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1.5; }
+      .barHot { fill: #c53030; }
+      .barNorm { fill: #2b6cb0; }
+      .barEven { fill: #2f855a; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+  <text x="450" y="26" text-anchor="middle" class="title">Data Skew and Salting</text>
+
+  <!-- phase labels -->
+  <text x="20" y="50" class="phaseLabel" fill="#c53030" opacity="0" id="p1label">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.44;0.46;1" values="1;1;0;0"/>
+    Phase 1: the hot key skews one partition
+  </text>
+  <text x="20" y="50" class="phaseLabel" fill="#2f855a" opacity="0" id="p2label">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.46;0.48;1" values="0;0;1;1"/>
+    Phase 2: salting spreads it evenly
+  </text>
+
+  <!-- ===================== PHASE 1: SKEW ===================== -->
+  <g id="phase1">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.44;0.46;1" values="1;1;0;0"/>
+
+    <text x="450" y="80" text-anchor="middle" class="sub">incoming rows, distributed by hash(store_id) % 3</text>
+
+    <!-- partition boxes -->
+    <rect x="80" y="235" width="180" height="150" rx="8" class="partbox"/>
+    <text x="170" y="253" text-anchor="middle" class="label">reduce partition 0</text>
+    <rect x="340" y="235" width="180" height="150" rx="8" class="partbox" stroke="#c53030" stroke-width="2.5"/>
+    <text x="430" y="253" text-anchor="middle" class="label" fill="#c53030">reduce partition 1 (hot)</text>
+    <rect x="600" y="235" width="180" height="150" rx="8" class="partbox"/>
+    <text x="690" y="253" text-anchor="middle" class="label">reduce partition 2</text>
+
+    <g id="p1chip1">
+      <rect x="60" y="95" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="95" y="114" text-anchor="middle" class="label" font-size="11">1042</text>
+      <animateMotion dur="12s" repeatCount="indefinite" keyTimes="0;0.14;0.26;1" keyPoints="0;0;1;1" path="M0,0 L335,150"/>
+    </g>
+    <g id="p1chip2">
+      <rect x="150" y="95" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="185" y="114" text-anchor="middle" class="label" font-size="11">1042</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.2s" keyTimes="0;0.15;0.27;1" keyPoints="0;0;1;1" path="M0,0 L245,180"/>
+    </g>
+    <g id="p1chip3">
+      <rect x="240" y="95" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="275" y="114" text-anchor="middle" class="label" font-size="11">1042</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.4s" keyTimes="0;0.16;0.28;1" keyPoints="0;0;1;1" path="M0,0 L155,210"/>
+    </g>
+    <g id="p1chip4">
+      <rect x="330" y="95" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="365" y="114" text-anchor="middle" class="label" font-size="11">1042</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.6s" keyTimes="0;0.17;0.29;1" keyPoints="0;0;1;1" path="M0,0 L65,240"/>
+    </g>
+    <g id="p1chip5">
+      <rect x="420" y="95" width="70" height="28" rx="6" class="chipNorm"/>
+      <text x="455" y="114" text-anchor="middle" class="label" font-size="11">2001</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.3s" keyTimes="0;0.16;0.28;1" keyPoints="0;0;1;1" path="M0,0 L-285,150"/>
+    </g>
+    <g id="p1chip6">
+      <rect x="510" y="95" width="70" height="28" rx="6" class="chipNorm"/>
+      <text x="545" y="114" text-anchor="middle" class="label" font-size="11">3007</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.5s" keyTimes="0;0.17;0.29;1" keyPoints="0;0;1;1" path="M0,0 L145,150"/>
+    </g>
+
+    <!-- task duration bars -->
+    <text x="60" y="398" class="sub">task duration</text>
+    <g>
+      <rect x="150" y="404" width="0" height="14" rx="4" class="barNorm">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.30;0.38;1" values="0;0;70;70"/>
+      </rect>
+      <text x="80" y="415" class="sub">task0</text>
+    </g>
+    <g>
+      <rect x="150" y="424" width="0" height="14" rx="4" class="barHot">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.30;0.40;1" values="0;0;280;280"/>
+      </rect>
+      <text x="80" y="435" class="sub" fill="#c53030">task1</text>
+    </g>
+    <g>
+      <rect x="150" y="444" width="0" height="14" rx="4" class="barNorm">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.30;0.38;1" values="0;0;70;70"/>
+      </rect>
+      <text x="80" y="455" class="sub">task2</text>
+    </g>
+
+    <!-- stage barrier line at the end of the longest bar -->
+    <g opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.40;0.42;0.44;1" values="0;0;1;1;0"/>
+      <line x1="430" y1="400" x2="430" y2="458" stroke="#c53030" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="430" y="470" text-anchor="middle" class="sub" fill="#c53030">stage barrier: waits for task1</text>
+    </g>
+  </g>
+
+  <!-- ===================== PHASE 2: SALTING ===================== -->
+  <g id="phase2">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.46;0.48;1" values="0;0;1;1"/>
+
+    <text x="450" y="80" text-anchor="middle" class="sub">salt(store_id) = store_id + "_" + rand(0,2), then hash the salted key</text>
+
+    <!-- dim/small side box exploding into 3 salted copies -->
+    <rect x="360" y="95" width="180" height="30" rx="6" class="chipSalt" opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.46;0.48;0.56;0.58;1" values="0;0;1;1;0;0"/>
+    </rect>
+    <text x="450" y="115" text-anchor="middle" class="label" opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.46;0.48;0.56;0.58;1" values="0;0;1;1;0;0"/>
+      dim side: store_id=1042
+    </text>
+
+    <text x="450" y="135" text-anchor="middle" class="sub" opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.56;0.58;1" values="0;0;1;1"/>
+      small side exploded x3 so every salted variant still matches
+    </text>
+
+    <!-- staging row: hot key rows now carry a salt suffix, cycling 0,1,2,0 -->
+    <!-- partition boxes, all equal weight now -->
+    <rect x="80" y="235" width="180" height="150" rx="8" class="partbox" stroke="#2f855a" stroke-width="2"/>
+    <text x="170" y="253" text-anchor="middle" class="label" fill="#2f855a">reduce partition 0</text>
+    <rect x="340" y="235" width="180" height="150" rx="8" class="partbox" stroke="#2f855a" stroke-width="2"/>
+    <text x="430" y="253" text-anchor="middle" class="label" fill="#2f855a">reduce partition 1</text>
+    <rect x="600" y="235" width="180" height="150" rx="8" class="partbox" stroke="#2f855a" stroke-width="2"/>
+    <text x="690" y="253" text-anchor="middle" class="label" fill="#2f855a">reduce partition 2</text>
+    <g id="p2dim0">
+      <rect x="0" y="0" width="70" height="26" rx="6" class="chipSalt"/>
+      <text x="35" y="18" text-anchor="middle" class="label" font-size="10">1042_0</text>
+      <animateMotion dur="12s" repeatCount="indefinite" keyTimes="0;0.56;0.68;1" keyPoints="0;0;1;1" path="M395,109 L135,206"/>
+    </g>
+    <g id="p2dim1">
+      <rect x="0" y="0" width="70" height="26" rx="6" class="chipSalt"/>
+      <text x="35" y="18" text-anchor="middle" class="label" font-size="10">1042_1</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.15s" keyTimes="0;0.56;0.68;1" keyPoints="0;0;1;1" path="M395,109 L395,206"/>
+    </g>
+    <g id="p2dim2">
+      <rect x="0" y="0" width="70" height="26" rx="6" class="chipSalt"/>
+      <text x="35" y="18" text-anchor="middle" class="label" font-size="10">1042_2</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.3s" keyTimes="0;0.56;0.68;1" keyPoints="0;0;1;1" path="M395,109 L655,206"/>
+    </g>
+
+    <g id="p2chip1">
+      <rect x="60" y="150" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="95" y="169" text-anchor="middle" class="label" font-size="10">1042_0</text>
+      <animateMotion dur="12s" repeatCount="indefinite" keyTimes="0;0.58;0.70;1" keyPoints="0;0;1;1" path="M0,0 L65,122"/>
+    </g>
+    <g id="p2chip2">
+      <rect x="150" y="150" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="185" y="169" text-anchor="middle" class="label" font-size="10">1042_1</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.2s" keyTimes="0;0.59;0.71;1" keyPoints="0;0;1;1" path="M0,0 L235,122"/>
+    </g>
+    <g id="p2chip3">
+      <rect x="240" y="150" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="275" y="169" text-anchor="middle" class="label" font-size="10">1042_2</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.4s" keyTimes="0;0.60;0.72;1" keyPoints="0;0;1;1" path="M0,0 L405,122"/>
+    </g>
+    <g id="p2chip4">
+      <rect x="330" y="150" width="70" height="28" rx="6" class="chipHot"/>
+      <text x="365" y="169" text-anchor="middle" class="label" font-size="10">1042_0</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.6s" keyTimes="0;0.61;0.73;1" keyPoints="0;0;1;1" path="M0,0 L-205,182"/>
+    </g>
+    <g id="p2chip5">
+      <rect x="420" y="150" width="70" height="28" rx="6" class="chipNorm"/>
+      <text x="455" y="169" text-anchor="middle" class="label" font-size="11">2001</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.3s" keyTimes="0;0.60;0.72;1" keyPoints="0;0;1;1" path="M0,0 L-35,182"/>
+    </g>
+    <g id="p2chip6">
+      <rect x="510" y="150" width="70" height="28" rx="6" class="chipNorm"/>
+      <text x="545" y="169" text-anchor="middle" class="label" font-size="11">3007</text>
+      <animateMotion dur="12s" repeatCount="indefinite" begin="0.5s" keyTimes="0;0.61;0.73;1" keyPoints="0;0;1;1" path="M0,0 L135,182"/>
+    </g>
+
+    <!-- task duration bars, now even -->
+    <text x="60" y="398" class="sub">task duration</text>
+    <g>
+      <rect x="150" y="404" width="0" height="14" rx="4" class="barEven">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.74;0.84;1" values="0;0;140;140"/>
+      </rect>
+      <text x="80" y="415" class="sub">task0</text>
+    </g>
+    <g>
+      <rect x="150" y="424" width="0" height="14" rx="4" class="barEven">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.74;0.84;1" values="0;0;140;140"/>
+      </rect>
+      <text x="80" y="435" class="sub">task1</text>
+    </g>
+    <g>
+      <rect x="150" y="444" width="0" height="14" rx="4" class="barEven">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" keyTimes="0;0.74;0.84;1" values="0;0;140;140"/>
+      </rect>
+      <text x="80" y="455" class="sub">task2</text>
+    </g>
+
+    <!-- barrier now lands right after the (shorter, even) bars -->
+    <g opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.84;0.86;0.98;1" values="0;0;1;1;0"/>
+      <line x1="290" y1="400" x2="290" y2="458" stroke="#2f855a" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="290" y="470" text-anchor="middle" class="sub" fill="#2f855a">tasks finish together, barrier moves in</text>
+    </g>
+    <!-- drop-salt note on the final held frame -->
+    <text x="700" y="405" class="sub" opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.86;0.88;1" values="0;0;1;1"/>
+      salt column dropped
+    </text>
+    <text x="700" y="419" class="sub" opacity="0">
+      <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.86;0.88;1" values="0;0;1;1"/>
+      after the join completes
+    </text>
+  </g>
+
+  <!-- caption -->
+  <text x="450" y="483" text-anchor="middle" class="caption" font-weight="600">Diagnose skew as max task duration far exceeding the median on a shuffle stage, not a slow cluster.</text>
+  <text x="450" y="496" text-anchor="middle" class="caption">AQE skew join auto-fixes joins (not groupBy); salting the hot key + exploding the small side is the manual fix.</text>
+</svg>

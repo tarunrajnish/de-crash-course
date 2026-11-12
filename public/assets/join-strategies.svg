@@ -1,0 +1,199 @@
+<svg viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!--
+    Join strategies: broadcast hash join, sort-merge join, shuffle hash join.
+    Simplification noted in caption: panels run concurrently rather than Spark picking
+    only one per query; shown together purely to compare mechanics side by side.
+    10s loop: 0-8.5s mechanics animate per panel, 8.5-10s hold.
+  -->
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2b6cb0"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c05621"/>
+    </marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b46c1"/>
+    </marker>
+    <style>
+      text { fill: #1a202c; }
+      .title { font-size: 19px; font-weight: 700; }
+      .panelTitle { font-size: 15px; font-weight: 700; }
+      .caption { font-size: 12.5px; fill: #2d3748; }
+      .sub { font-size: 12px; fill: #4a5568; }
+      .label { font-size: 12px; font-weight: 600; }
+      .panel { fill: #f7fafc; stroke: #cbd5e0; stroke-width: 1.5; }
+      .big { fill: #bee3f8; stroke: #2b6cb0; stroke-width: 1.5; }
+      .small { fill: #fbd38d; stroke: #b7791f; stroke-width: 1.5; }
+      .exec { fill: #e9d8fd; stroke: #6b46c1; stroke-width: 1.5; }
+      .hash { fill: #fed7d7; stroke: #c53030; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+  <text x="450" y="28" text-anchor="middle" class="title">Three Spark Join Strategies</text>
+
+  <!-- panel frames -->
+  <rect x="20" y="45" width="280" height="330" rx="8" class="panel"/>
+  <rect x="310" y="45" width="280" height="330" rx="8" class="panel"/>
+  <rect x="600" y="45" width="280" height="330" rx="8" class="panel"/>
+
+  <text x="160" y="68" text-anchor="middle" class="panelTitle" fill="#2b6cb0">Broadcast Hash Join</text>
+  <text x="450" y="68" text-anchor="middle" class="panelTitle" fill="#c05621">Sort-Merge Join</text>
+  <text x="740" y="68" text-anchor="middle" class="panelTitle" fill="#6b46c1">Shuffle Hash Join</text>
+
+  <!-- ===================== PANEL 1: Broadcast Hash Join ===================== -->
+  <g id="bhj">
+    <rect x="35" y="90" width="90" height="34" rx="6" class="big"/>
+    <text x="80" y="111" text-anchor="middle" class="label">large side</text>
+    <rect x="150" y="90" width="70" height="30" rx="6" class="small"/>
+    <text x="185" y="110" text-anchor="middle" class="label" font-size="11">small (&lt;10MB)</text>
+
+    <!-- 3 executors each get a full copy of small table -->
+    <g>
+      <rect x="35" y="160" width="230" height="56" rx="6" fill="#edf2f7" stroke="#a0aec0"/>
+      <text x="45" y="175" class="sub">executor 0</text>
+      <rect x="45" y="182" width="60" height="26" rx="4" class="big"/>
+      <text x="75" y="200" text-anchor="middle" class="label" font-size="11">part L0</text>
+      <rect x="115" y="182" width="60" height="26" rx="4" class="small" id="bhjCopy0"/>
+      <text x="145" y="200" text-anchor="middle" class="label" font-size="10">small ⟲</text>
+
+      <rect x="35" y="224" width="230" height="56" rx="6" fill="#edf2f7" stroke="#a0aec0"/>
+      <text x="45" y="239" class="sub">executor 1</text>
+      <rect x="45" y="246" width="60" height="26" rx="4" class="big"/>
+      <text x="75" y="264" text-anchor="middle" class="label" font-size="11">part L1</text>
+      <rect x="115" y="246" width="60" height="26" rx="4" class="small" id="bhjCopy1"/>
+      <text x="145" y="264" text-anchor="middle" class="label" font-size="10">small ⟲</text>
+
+      <rect x="35" y="288" width="230" height="56" rx="6" fill="#edf2f7" stroke="#a0aec0"/>
+      <text x="45" y="303" class="sub">executor 2</text>
+      <rect x="45" y="310" width="60" height="26" rx="4" class="big"/>
+      <text x="75" y="328" text-anchor="middle" class="label" font-size="11">part L2</text>
+      <rect x="115" y="310" width="60" height="26" rx="4" class="small" id="bhjCopy2"/>
+      <text x="145" y="328" text-anchor="middle" class="label" font-size="10">small ⟲</text>
+    </g>
+
+    <!-- broadcast dots traveling from small table to each executor's local hash map -->
+    <circle r="5" fill="#b7791f">
+      <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.02;0.3;0.32;1" keyTimes="0;0.02;0.3;0.32;1" path="M185,105 L145,195"/>
+    </circle>
+    <circle r="5" fill="#b7791f">
+      <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.02;0.3;0.32;1" keyTimes="0;0.02;0.3;0.32;1" path="M185,105 L145,259"/>
+    </circle>
+    <circle r="5" fill="#b7791f">
+      <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.02;0.3;0.32;1" keyTimes="0;0.02;0.3;0.32;1" path="M185,105 L145,323"/>
+    </circle>
+
+    <!-- large side never moves: small pulse to show local probe only, no network icon on L parts -->
+    <g stroke="#2b6cb0" stroke-width="1.5" marker-end="url(#arrB)" opacity="0">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.35;0.4;0.85;1" values="0;0;1;1;0"/>
+      <line x1="75" y1="208" x2="145" y2="195"/>
+      <line x1="75" y1="272" x2="145" y2="259"/>
+      <line x1="75" y1="336" x2="145" y2="323"/>
+    </g>
+
+    <text x="160" y="360" text-anchor="middle" class="sub">small table replicated to every executor;</text>
+    <text x="160" y="373" text-anchor="middle" class="sub">large side stays put, no shuffle of big data</text>
+  </g>
+
+  <!-- ===================== PANEL 2: Sort-Merge Join ===================== -->
+  <g id="smj">
+    <!-- left and right table partitions before shuffle -->
+    <rect x="320" y="90" width="110" height="28" rx="5" class="big"/>
+    <text x="375" y="109" text-anchor="middle" class="label" font-size="11">left (by key)</text>
+    <rect x="460" y="90" width="110" height="28" rx="5" class="small"/>
+    <text x="515" y="109" text-anchor="middle" class="label" font-size="11">right (by key)</text>
+
+    <!-- shuffle arrows both directions into sorted partitions -->
+    <g id="smjShuffle" stroke="#c05621" stroke-width="1.5" marker-end="url(#arrO)" opacity="0">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.02;0.22;0.24;1" values="0;1;1;1;1"/>
+      <line x1="375" y1="118" x2="375" y2="150"/>
+      <line x1="515" y1="118" x2="515" y2="150"/>
+    </g>
+
+    <!-- sorted co-partitions, 3 key ranges -->
+    <g>
+      <rect x="320" y="155" width="90" height="30" rx="5" class="big"/>
+      <text x="365" y="175" text-anchor="middle" class="label" font-size="11">L[A-F] sorted</text>
+      <rect x="430" y="155" width="90" height="30" rx="5" class="small"/>
+      <text x="475" y="175" text-anchor="middle" class="label" font-size="11">R[A-F] sorted</text>
+
+      <rect x="320" y="195" width="90" height="30" rx="5" class="big"/>
+      <text x="365" y="215" text-anchor="middle" class="label" font-size="11">L[G-M] sorted</text>
+      <rect x="430" y="195" width="90" height="30" rx="5" class="small"/>
+      <text x="475" y="215" text-anchor="middle" class="label" font-size="11">R[G-M] sorted</text>
+
+      <rect x="320" y="235" width="90" height="30" rx="5" class="big"/>
+      <text x="365" y="255" text-anchor="middle" class="label" font-size="11">L[N-Z] sorted</text>
+      <rect x="430" y="235" width="90" height="30" rx="5" class="small"/>
+      <text x="475" y="255" text-anchor="middle" class="label" font-size="11">R[N-Z] sorted</text>
+    </g>
+
+    <!-- merge pointers walking two sorted streams together -->
+    <g opacity="0" id="smjMerge">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.26;0.28;0.85;1" values="0;0;1;1;0"/>
+      <circle r="5" fill="#2b6cb0">
+        <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.28;0.6;0.62;1" keyTimes="0;0.28;0.6;0.62;1"
+          path="M365,170 L365,210 L365,250"/>
+      </circle>
+      <circle r="5" fill="#b7791f">
+        <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.28;0.6;0.62;1" keyTimes="0;0.28;0.6;0.62;1"
+          path="M475,170 L475,210 L475,250"/>
+      </circle>
+      <text x="420" y="290" text-anchor="middle" class="sub">merge: advance the smaller key pointer</text>
+    </g>
+
+    <text x="450" y="360" text-anchor="middle" class="sub">both sides shuffled + sorted by key, then</text>
+    <text x="450" y="373" text-anchor="middle" class="sub">merged like a zipper: no full hash table in memory</text>
+  </g>
+
+  <!-- ===================== PANEL 3: Shuffle Hash Join ===================== -->
+  <g id="shj">
+    <rect x="610" y="90" width="110" height="28" rx="5" class="big"/>
+    <text x="665" y="109" text-anchor="middle" class="label" font-size="11">build side</text>
+    <rect x="750" y="90" width="110" height="28" rx="5" class="small"/>
+    <text x="805" y="109" text-anchor="middle" class="label" font-size="11">probe side</text>
+
+    <g stroke="#6b46c1" stroke-width="1.5" marker-end="url(#arrP)" opacity="0">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.02;0.22;0.24;1" values="0;1;1;1;1"/>
+      <line x1="665" y1="118" x2="665" y2="148"/>
+      <line x1="805" y1="118" x2="805" y2="148"/>
+    </g>
+
+    <!-- per-partition hash table build -->
+    <rect x="620" y="155" width="90" height="150" rx="6" fill="#edf2f7" stroke="#a0aec0"/>
+    <text x="665" y="172" text-anchor="middle" class="sub">partition 0</text>
+    <rect x="632" y="180" width="66" height="40" rx="5" class="hash" id="shjHash0" opacity="0">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.26;0.28;1" values="0;0;1;1"/>
+    </rect>
+    <text x="665" y="204" text-anchor="middle" class="label" font-size="10" opacity="0">
+      <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.26;0.28;1" values="0;0;1;1"/>
+      hash map
+    </text>
+
+    <rect x="760" y="155" width="90" height="150" rx="6" fill="#edf2f7" stroke="#a0aec0"/>
+    <text x="805" y="172" text-anchor="middle" class="sub">partition 0</text>
+    <rect x="772" y="230" width="66" height="30" rx="5" class="small"/>
+    <text x="805" y="250" text-anchor="middle" class="label" font-size="10">probe row</text>
+
+    <!-- probe rows moving down to hit the hash map, no sorting -->
+    <circle r="5" fill="#b7791f">
+      <animateMotion dur="10s" repeatCount="indefinite" keyPoints="0;0.32;0.5;0.52;1" keyTimes="0;0.32;0.5;0.52;1"
+        path="M805,245 L690,200"/>
+    </circle>
+    <circle r="5" fill="#b7791f">
+      <animateMotion dur="10s" repeatCount="indefinite" begin="0.3s" keyPoints="0;0.32;0.5;0.52;1" keyTimes="0;0.32;0.5;0.52;1"
+        path="M805,245 L690,200"/>
+    </circle>
+
+    <text x="740" y="360" text-anchor="middle" class="sub">both sides shuffled, one side built into an</text>
+    <text x="740" y="373" text-anchor="middle" class="sub">in-memory hash map per partition, other probes it: no sort</text>
+  </g>
+
+  <!-- decision caption -->
+  <rect x="20" y="400" width="860" height="80" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+  <text x="450" y="420" text-anchor="middle" class="caption" font-weight="600">How Spark picks: broadcast if a side is below spark.sql.autoBroadcastJoinThreshold (default 10MB) and the join type allows it;</text>
+  <text x="450" y="438" text-anchor="middle" class="caption">else shuffle hash if spark.sql.join.preferSortMergeJoin=false and one side fits comfortably in memory;</text>
+  <text x="450" y="456" text-anchor="middle" class="caption">otherwise sort-merge (the default, always-correct fallback). AQE can upgrade to broadcast at runtime once real post-shuffle sizes are known.</text>
+  <text x="450" y="473" text-anchor="middle" class="caption" font-style="italic" fill="#718096">Simplification: panels animate together for comparison; Spark picks exactly one strategy per join.</text>
+</svg>
