@@ -469,6 +469,8 @@ a:hover {
 .topic-card-icon {
   width: 15px;
   height: 15px;
+  margin-top: 3px;
+  flex-shrink: 0;
   color: var(--accent-dark);
   opacity: 0.75;
 }
@@ -718,12 +720,13 @@ a:hover {
 
 .topic-card-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 0;
   font-family: var(--serif);
   font-size: 17px;
   font-weight: 500;
+  line-height: 1.35;
 }
 
 .topic-card-visited {
@@ -974,7 +977,17 @@ a:hover {
 
 @media (max-width: 600px) {
   #app {
-    padding: 32px 18px 72px;
+    padding: 64px 18px 72px;
+  }
+
+  .progress-meter {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .progress-meter-track {
+    max-width: none;
+    flex-basis: 100%;
   }
 
   .page-title {
