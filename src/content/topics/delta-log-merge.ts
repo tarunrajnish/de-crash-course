@@ -37,13 +37,6 @@ export const deltaLogMerge: Topic = {
       },
     },
     {
-      heading: "Schema enforcement",
-      paragraphs: [
-        "Schema enforcement rejects a write whose schema doesn't match the table's by default, which is what prevents a malformed or mistyped upstream change from silently corrupting a production table.",
-        "mergeSchema permits additive evolution: new columns can be added without rejecting the write. overwriteSchema replaces the schema outright, intended for a deliberate full redefinition of the table. Enforcement should stay on in production, with either of these flags used explicitly per write rather than disabled globally.",
-      ],
-    },
-    {
       heading: "Time travel and VACUUM are in tension",
       paragraphs: [
         "Old file versions stay readable (via time travel, for example a query AS OF a prior version) until VACUUM physically deletes them. The default 7-day retention is what makes rollback to a recent version possible after a bad write.",
@@ -85,10 +78,6 @@ export const deltaLogMerge: Topic = {
     {
       question: "Why does VACUUM with a very short retention period threaten rollback capability?",
       answer: "Time travel depends on old file versions still existing on disk. VACUUM physically deletes versions older than its retention window, so a short window removes the ability to roll back to anything beyond that recent point.",
-    },
-    {
-      question: "What's the difference between mergeSchema and overwriteSchema?",
-      answer: "mergeSchema adds new columns to the existing schema additively, while overwriteSchema replaces the table's schema outright; the former is for evolving a table, the latter for a deliberate full redefinition.",
     },
   ],
 };

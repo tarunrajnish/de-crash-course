@@ -2,6 +2,7 @@ import { findTopic } from "../content";
 import type { ComparisonTable, ContentSection, SelfTestQuestion } from "../content/types";
 import { el } from "../lib/dom";
 import { breadcrumb } from "../lib/breadcrumb";
+import { markVisited } from "../lib/progress";
 
 const SHOW_ANIMATIONS = false;
 
@@ -64,6 +65,7 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
   }
 
   const { course, topic } = found;
+  markVisited(course.id, topic.id);
 
   root.appendChild(breadcrumb([
     { label: "Home", route: { name: "home" } },

@@ -6,9 +6,9 @@ topic set.
 
 ## User experience
 
-- **Search / jump (cmd+k)**: fuzzy filter over topic titles once there are
-  multiple topic sets, so a reader can jump straight to a topic instead of
-  scrolling through a list.
+- **Search / jump (cmd+k)**: implemented. `Cmd/Ctrl+K` or `/` opens a modal
+  that fuzzy-filters over all topic titles, course titles, and descriptions,
+  with arrow-key navigation and Enter to jump straight to a topic.
 - **Deep-linkable anchors**: link directly to a section or a specific
   self-test question (e.g. `#/topic/skew-and-salting#q3`) so a link can point
   at one question instead of "scroll down."

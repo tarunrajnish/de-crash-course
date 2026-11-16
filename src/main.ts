@@ -5,8 +5,10 @@ import { renderTopicDetail } from "./pages/topicDetail";
 import { onRouteChange } from "./lib/router";
 import { clear, el } from "./lib/dom";
 import { initTheme, toggleTheme } from "./lib/theme";
+import { initSearch } from "./lib/search";
 
 initTheme();
+initSearch();
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -26,6 +28,19 @@ themeToggle.addEventListener("click", () => {
   syncToggleLabel();
 });
 document.body.appendChild(themeToggle);
+
+const footer = el("footer", { className: "site-footer" });
+
+const footerLinks = el("nav", { className: "site-footer-links" });
+footerLinks.appendChild(el("a", { className: "site-footer-link", text: "Home", attrs: { href: "#/" } }));
+footer.appendChild(footerLinks);
+
+footer.appendChild(el("span", { className: "site-footer-dot", text: "·" }));
+
+footer.appendChild(
+  el("p", { className: "site-footer-text", text: "© 2026 Tarun Rajnish. All rights reserved." }),
+);
+document.body.appendChild(footer);
 
 onRouteChange((route) => {
   clear(app);

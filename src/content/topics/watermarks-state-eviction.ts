@@ -29,13 +29,6 @@ export const watermarksStateEviction: Topic = {
       },
     },
     {
-      heading: "Exactly once is a claim about bookkeeping",
-      paragraphs: [
-        "Exactly once refers to Spark's internal offset tracking plus an idempotent sink. Spark guarantees it processes each source offset exactly once internally. Whether the end result is exactly once depends entirely on what the sink does when it sees the same batch replayed after a failure.",
-        "Replay safety comes from the sink: a delete-then-write pattern keyed on a file identifier, or a MERGE keyed on a business key, both make replaying the same micro-batch idempotent. Without one of those, a restart after a partial failure can double-apply a batch.",
-      ],
-    },
-    {
       heading: "Dedup choice matters more than the dedup call itself",
       paragraphs: [
         "dropDuplicates on an event id grows state without bound, since every unique id that has ever been seen has to be remembered to detect a future duplicate of it, forever, unless bounded by a watermark.",
@@ -73,10 +66,6 @@ export const watermarksStateEviction: Topic = {
     {
       question: "Why does a longer watermark cost more even when it catches more late data correctly?",
       answer: "A longer watermark means more state (aggregation buffers, join buffers) has to be retained in memory or spilled to disk while waiting for the window to close, since nothing can be evicted until the watermark has passed it.",
-    },
-    {
-      question: "A streaming job claims exactly-once processing but double-writes rows after a restart. What's missing?",
-      answer: "The sink is not idempotent. Spark's internal exactly-once offset tracking only guarantees each source offset is processed once by Spark; if the sink isn't safe to re-apply the same batch (no delete-then-write or MERGE on a business key), a restart after partial failure can double-apply writes.",
     },
     {
       question: "Why does dropDuplicates on an event id alone grow state forever?",

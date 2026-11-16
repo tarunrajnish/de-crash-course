@@ -49,13 +49,6 @@ export const partitioningFileSizing: Topic = {
       },
     },
     {
-      heading: "Pruning only works on the stored column",
-      paragraphs: [
-        "Partition pruning skips entire directories based on the partition column appearing directly in a filter. Predicate pushdown skips row groups inside Parquet files using min/max statistics, independent of partitioning.",
-        "Both only work if the filter is written against the stored column itself, not a function of it. where date(ts) = '2026-01-01' often defeats pruning, because Spark would have to evaluate date() against every row's ts to know which partitions qualify. where dt = '2026-01-01', filtering directly on a stored partition column, gets the pruning.",
-      ],
-    },
-    {
       heading: "Spark UI evidence",
       paragraphs: [
         "Check the number of tasks in the read stage against the expected file count: thousands of tasks reading tiny files shows up as a task count far exceeding the data volume would justify. The SQL tab's scan node shows \"number of files read\" and total size, letting you compute average file size directly.",
@@ -64,7 +57,6 @@ export const partitioningFileSizing: Topic = {
   ],
   examplesToAttach: [
     "A table's file listing before and after an OPTIMIZE run, showing file count and average size.",
-    "A query plan comparing where dt = '...' against where date(ts) = '...' on the same table.",
   ],
   selfTest: [
     {
@@ -81,16 +73,6 @@ export const partitioningFileSizing: Topic = {
       question: "A table has 2 million files for 500 GB of data. What's the likely root cause and the fix?",
       answer:
         "Likely a high-cardinality partition column or many small incremental writes without compaction. Fix with OPTIMIZE or liquid clustering to rewrite the small files into properly sized ones, and reconsider the partition column choice going forward.",
-    },
-    {
-      question: "Why does where date(ts) = '2026-01-01' often fail to prune partitions that where dt = '2026-01-01' would prune?",
-      answer:
-        "Partition pruning matches filters against the stored partition column directly. Wrapping ts in date() requires evaluating a function per row, which pruning logic does not do, so Spark falls back to scanning every partition.",
-    },
-    {
-      question: "What's the difference between partition pruning and predicate pushdown?",
-      answer:
-        "Partition pruning skips whole directories based on the partition column in the filter. Predicate pushdown skips row groups inside Parquet files using stored min/max statistics, and applies even to non-partition columns.",
     },
     {
       question: "Why is customer_id a poor partition column choice even if queries do filter on it?",
