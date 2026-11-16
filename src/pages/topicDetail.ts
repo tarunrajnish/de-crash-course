@@ -3,6 +3,7 @@ import type { ComparisonTable, ContentSection, SelfTestQuestion } from "../conte
 import { el } from "../lib/dom";
 import { breadcrumb } from "../lib/breadcrumb";
 import { markVisited } from "../lib/progress";
+import { renderInlineText } from "../lib/inlineCode";
 
 const SHOW_ANIMATIONS = false;
 
@@ -30,13 +31,17 @@ function renderSection(section: ContentSection): HTMLElement {
   const wrap = el("section", { className: "content-section" });
   wrap.appendChild(el("h2", { className: "section-heading", text: section.heading }));
   for (const p of section.paragraphs) {
-    wrap.appendChild(el("p", { className: "section-paragraph", text: p }));
+    const para = el("p", { className: "section-paragraph" });
+    renderInlineText(para, p);
+    wrap.appendChild(para);
   }
   if (section.table) wrap.appendChild(renderTable(section.table));
   if (section.warning) {
     const warn = el("div", { className: "callout callout-warning" });
     warn.appendChild(el("span", { className: "callout-label", text: "Cost / gotcha" }));
-    warn.appendChild(el("p", { text: section.warning }));
+    const warnText = el("p");
+    renderInlineText(warnText, section.warning);
+    warn.appendChild(warnText);
     wrap.appendChild(warn);
   }
   return wrap;
@@ -44,12 +49,16 @@ function renderSection(section: ContentSection): HTMLElement {
 
 function renderSelfTestItem(q: SelfTestQuestion, index: number): HTMLElement {
   const item = el("div", { className: "self-test-item" });
-  item.appendChild(el("p", { className: "self-test-question", text: `${index + 1}. ${q.question}` }));
+  const question = el("p", { className: "self-test-question" });
+  renderInlineText(question, `${index + 1}. ${q.question}`);
+  item.appendChild(question);
   if (q.answer) {
     const details = el("details", { className: "self-test-answer" });
     const summary = el("summary", { text: "Reveal answer" });
     details.appendChild(summary);
-    details.appendChild(el("p", { text: q.answer }));
+    const answer = el("p");
+    renderInlineText(answer, q.answer);
+    details.appendChild(answer);
     item.appendChild(details);
   }
   return item;
@@ -111,7 +120,11 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
     const examplesBox = el("div", { className: "callout callout-examples" });
     examplesBox.appendChild(el("span", { className: "callout-label", text: "Your examples to attach" }));
     const list = el("ul", { className: "examples-list" });
-    for (const e of topic.examplesToAttach) list.appendChild(el("li", { text: e }));
+    for (const e of topic.examplesToAttach) {
+      const li = el("li");
+      renderInlineText(li, e);
+      list.appendChild(li);
+    }
     examplesBox.appendChild(list);
     root.appendChild(examplesBox);
   }

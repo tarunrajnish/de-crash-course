@@ -15,8 +15,10 @@ topic set.
 - **Local-only read progress**: a quiet "x of 10 topics opened" indicator
   stored in `localStorage`, shown as a dim checkmark on the topic list.
   Signals progress without a streak, badge, or server-side tracking.
-- **Copy buttons** on code snippets and Spark UI evidence commands, since
-  readers are often typing these into their own shell or notebook.
+- **Copy buttons**: implemented. Any backtick-wrapped command or config key
+  in prose (paragraphs, warnings, self-test, examples-to-attach) renders as
+  an inline code chip with a hover-revealed copy icon, no content-model
+  change required.
 - **Keyboard navigation**: arrow keys or `j`/`k` to move between self-test
   questions, `esc` to go back a level.
 - **Print / offline view**: a print stylesheet so a topic page can be saved

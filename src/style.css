@@ -815,6 +815,56 @@ a:hover {
   color: var(--text);
 }
 
+.inline-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.inline-code code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--accent-dark);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.inline-code-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 4px;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.inline-code:hover .inline-code-copy,
+.inline-code-copy:focus-visible {
+  opacity: 1;
+}
+
+.inline-code-copy:hover {
+  color: var(--accent-dark);
+  background: var(--accent-bg);
+}
+
+.inline-code-copy-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.inline-code-copy--done {
+  opacity: 1;
+  color: var(--accent-dark);
+}
+
 .callout {
   display: flex;
   flex-direction: column;
