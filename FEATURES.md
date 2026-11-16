@@ -52,9 +52,10 @@ topic set.
   No server process to manage.
 - **Custom domain plus HTTPS**: any of the above providers handle TLS
   automatically; just point a domain at it.
-- **CI build check**: a GitHub Actions workflow running `npm ci`,
-  `tsc --noEmit`, and `npm run build` on every push, so a broken build never
-  reaches the hosting provider.
+- **CI build check**: implemented (`.github/workflows/ci.yml`), running
+  `npm ci`, `tsc --noEmit`, and `npm run build` on every push/PR. Only runs
+  once this repo is actually hosted on GitHub (currently pushed to a local
+  remote only).
 - **Cache headers**: fingerprinted asset filenames from Vite's build already
   support long-lived caching; set `Cache-Control: public, max-age=31536000,
   immutable` on hashed assets and a short TTL on `index.html`.
