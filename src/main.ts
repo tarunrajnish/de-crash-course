@@ -1,11 +1,10 @@
 import "./style.css";
-import { renderHome } from "./pages/home";
-import { renderTopicList } from "./pages/topicList";
-import { renderTopicDetail } from "./pages/topicDetail";
+import { renderPage } from "./pages";
 import { onRouteChange } from "./lib/router";
 import { clear, el } from "./lib/dom";
 import { initTheme, toggleTheme } from "./lib/theme";
 import { initSearch } from "./lib/search";
+import { applyPageMetadata } from "./lib/seo";
 
 initTheme();
 initSearch();
@@ -29,33 +28,11 @@ themeToggle.addEventListener("click", () => {
 });
 document.body.appendChild(themeToggle);
 
-const footer = el("footer", { className: "site-footer" });
-
-const footerLinks = el("nav", { className: "site-footer-links" });
-footerLinks.appendChild(el("a", { className: "site-footer-link", text: "Home", attrs: { href: "#/" } }));
-footer.appendChild(footerLinks);
-
-footer.appendChild(el("span", { className: "site-footer-dot", text: "·" }));
-
-footer.appendChild(
-  el("p", { className: "site-footer-text", text: "© 2026 Tarun Rajnish. All rights reserved." }),
-);
-document.body.appendChild(footer);
-
 onRouteChange((route) => {
   clear(app);
   window.scrollTo(0, 0);
 
-  switch (route.name) {
-    case "home":
-      app.appendChild(renderHome());
-      break;
-    case "topic-list":
-      app.appendChild(renderTopicList(route.courseId));
-      break;
-    case "topic-detail":
-      app.appendChild(renderTopicDetail(route.courseId, route.topicId));
-      break;
-  }
+  applyPageMetadata(route);
+  app.appendChild(renderPage(route));
 });
 

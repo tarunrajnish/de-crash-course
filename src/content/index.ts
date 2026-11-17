@@ -49,46 +49,54 @@ import { hybridSearchAndReranking } from "./topics/hybrid-search-and-reranking";
 import { buildingARetrievalEvalSet } from "./topics/building-a-retrieval-eval-set";
 import { exposingPipelinesAsAgentTools } from "./topics/exposing-pipelines-as-agent-tools";
 import { agentLoopsAndToolCalling } from "./topics/agent-loops-and-tool-calling";
+import { platformArchitectureAndIncrementalIngestion } from "./topics/platform-architecture-and-incremental-ingestion";
+import { databricksSqlAndPyspark } from "./topics/databricks-sql-and-pyspark";
+import { unityCatalogAndAccessControls } from "./topics/unity-catalog-and-access-controls";
+import { performanceCostAndCapacity } from "./topics/performance-cost-and-capacity";
+import { dataPipelineCicdAndPromotion } from "./topics/data-pipeline-cicd-and-promotion";
+import { reusableAndTestedDataEngineering } from "./topics/reusable-and-tested-data-engineering";
+import { productionSupportAndRootCauseAnalysis } from "./topics/production-support-and-root-cause-analysis";
+import { dataProductOwnershipAndDelivery } from "./topics/data-product-ownership-and-delivery";
 
 export const sparkDeltaBasicsCourse: Course = {
   id: "spark-delta-basics",
   title: "Spark & Delta Lake basics",
-  shortDescription: "The handful of concepts everything else here builds on: what Spark is, what Delta Lake adds.",
+  shortDescription: "Distributed processing, Spark APIs, and Delta Lake transactions.",
   topics: [whatIsSpark, rddVsDataframe, jobStageTask, whatIsDeltaLake, acidOnADataLake],
 };
 
 export const transformationsJoinsCourse: Course = {
   id: "transformations-joins-skew",
-  title: "Transformations, joins, partitioning & skew",
-  shortDescription: "Shuffles, join strategies, file sizing, and the most misdiagnosed Spark problem.",
+  title: "Joins, partitioning & skew",
+  shortDescription: "Transformations, shuffles, join strategies, and balanced partitions.",
   topics: [narrowVsWide, joinStrategies, partitioningFileSizing, skewAndSalting],
 };
 
 export const pushdownCachingCourse: Course = {
   id: "pushdown-and-caching",
   title: "Predicate pushdown & caching",
-  shortDescription: "Two skipping mechanisms and two ways to reuse work, and the mistakes that quietly disable them.",
+  shortDescription: "Skip unnecessary reads and reuse work with caching and checkpoints.",
   topics: [predicatePartitionPruning, cachingVsCheckpointing],
 };
 
 export const deltaStreamingInternalsCourse: Course = {
   id: "delta-streaming-internals",
-  title: "Delta internals & streaming semantics",
-  shortDescription: "Watermarks, exactly-once vs. idempotency, the Delta transaction log, and schema enforcement.",
+  title: "Delta internals & streaming",
+  shortDescription: "Watermarks, delivery guarantees, transaction logs, and schema evolution.",
   topics: [watermarksStateEviction, exactlyOnceIdempotency, deltaLogMerge, schemaEnforcementEvolution],
 };
 
 export const dataModelingWarehousingCourse: Course = {
   id: "data-modeling-warehousing",
   title: "Data modeling & warehousing",
-  shortDescription: "OLAP vs. OLTP, star schema, slowly changing dimensions, and the storage layout underneath both.",
+  shortDescription: "Table grain, star schemas, dimensions, and analytical storage.",
   topics: [olapVsOltp, starVsSnowflakeSchema, factVsDimensionTables, slowlyChangingDimensions, columnarVsRowStorage],
 };
 
 export const orchestrationAndPipelinesCourse: Course = {
   id: "orchestration-and-pipelines",
   title: "Orchestration & pipeline design",
-  shortDescription: "DAGs, idempotency, backfills, scheduling philosophy, and the data contracts that hold it together.",
+  shortDescription: "DAGs, safe retries, backfills, scheduling, and data contracts.",
   topics: [
     dagsAndIdempotentDesign,
     backfillsAndReprocessing,
@@ -101,7 +109,7 @@ export const orchestrationAndPipelinesCourse: Course = {
 export const dataQualityObservabilityCourse: Course = {
   id: "data-quality-observability",
   title: "Data quality & observability",
-  shortDescription: "Freshness, schema, and distribution checks, and tracing a bad number back to its root cause.",
+  shortDescription: "Validation, freshness, anomaly detection, and incident lineage.",
   topics: [
     dataObservabilityPillars,
     schemaRegistriesAndContracts,
@@ -114,7 +122,7 @@ export const dataQualityObservabilityCourse: Course = {
 export const lakehouseStorageFormatsCourse: Course = {
   id: "lakehouse-storage-formats",
   title: "Lakehouse storage & file formats",
-  shortDescription: "Parquet internals, the open table format landscape, compaction, and why catalogs matter more than ever.",
+  shortDescription: "Parquet, open table formats, compaction, and shared catalogs.",
   topics: [
     parquetInternals,
     lakehouseTableFormats,
@@ -126,8 +134,8 @@ export const lakehouseStorageFormatsCourse: Course = {
 
 export const aiFeatureEmbeddingPipelinesCourse: Course = {
   id: "ai-feature-embedding-pipelines",
-  title: "AI × data engineering: features & embeddings",
-  shortDescription: "The plumbing behind ML and retrieval systems: feature stores, embeddings, RAG, and training data.",
+  title: "AI features & embeddings",
+  shortDescription: "Feature stores, vector search, RAG pipelines, and training data.",
   topics: [
     featureStores,
     batchVsStreamingFeatures,
@@ -139,8 +147,8 @@ export const aiFeatureEmbeddingPipelinesCourse: Course = {
 
 export const aiDataEngineeringFrontierCourse: Course = {
   id: "ai-de-frontier",
-  title: "AI × data engineering: the agentic frontier",
-  shortDescription: "Where data engineering is heading as AI agents become consumers and operators of pipelines.",
+  title: "AI agents & data engineering",
+  shortDescription: "Agentic ETL, semantic layers, context pipelines, and AI governance.",
   topics: [
     textToSqlAndAgenticEtl,
     semanticLayersForAi,
@@ -152,14 +160,38 @@ export const aiDataEngineeringFrontierCourse: Course = {
 
 export const retrievalSystemsAndAgentToolsCourse: Course = {
   id: "retrieval-systems-and-agent-tools",
-  title: "Retrieval systems & agent tooling",
-  shortDescription: "Turning parsed documents into searchable, agent-usable tools: multimodal parsing, hybrid retrieval, evaluation, and tool-calling loops.",
+  title: "Retrieval & agent tooling",
+  shortDescription: "Document parsing, hybrid search, retrieval evals, and MCP tools.",
   topics: [
     parsingUnstructuredDocuments,
     hybridSearchAndReranking,
     buildingARetrievalEvalSet,
     exposingPipelinesAsAgentTools,
     agentLoopsAndToolCalling,
+  ],
+};
+
+export const databricksAndPlatformArchitectureCourse: Course = {
+  id: "databricks-and-platform-architecture",
+  title: "Databricks & architecture",
+  shortDescription: "Batch and CDC pipelines, SQL, PySpark, access controls, and cost.",
+  topics: [
+    platformArchitectureAndIncrementalIngestion,
+    databricksSqlAndPyspark,
+    unityCatalogAndAccessControls,
+    performanceCostAndCapacity,
+  ],
+};
+
+export const productionEngineeringAndOwnershipCourse: Course = {
+  id: "production-engineering-and-ownership",
+  title: "Production & ownership",
+  shortDescription: "CI/CD, testing, reusable frameworks, support, and technical leadership.",
+  topics: [
+    dataPipelineCicdAndPromotion,
+    reusableAndTestedDataEngineering,
+    productionSupportAndRootCauseAnalysis,
+    dataProductOwnershipAndDelivery,
   ],
 };
 
@@ -175,6 +207,8 @@ export const courses: Course[] = [
   aiFeatureEmbeddingPipelinesCourse,
   aiDataEngineeringFrontierCourse,
   retrievalSystemsAndAgentToolsCourse,
+  databricksAndPlatformArchitectureCourse,
+  productionEngineeringAndOwnershipCourse,
 ];
 
 export function findCourse(courseId: string): Course | undefined {

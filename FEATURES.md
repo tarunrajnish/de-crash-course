@@ -1,44 +1,70 @@
 # Feature list
 
-Ideas for improving the site, grouped by area. Nothing here is committed to;
-this is a working backlog to pull from as the site grows past the first
-topic set.
+Prioritized launch backlog and implementation status. Priorities describe
+recommended order; publication, commits, and infrastructure changes still
+require user authorization.
+
+## Recommended order
+
+| Priority | Work | Completion criterion |
+| --- | --- | --- |
+| P0: before publication | Security review and dependency remediation | Review tracked files and Git history for secrets/private material; resolve the reported high-severity build-tool dependency advisory; review rendering, clipboard handling, external resources, and Actions permissions |
+| P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, clipboard success/failure, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
+| P1: publish | Personal GitHub repository and Pages deployment | Commit approved changes, publish to the intended personal repository, and deploy the entire generated `dist/` through a Pages workflow; existing CI does not deploy |
+| P1: verify launch | Live-site checks and Search Console | Verify HTTPS, deep links, assets, legacy redirects, an actual HTTP 404, and canonical URLs; submit the sitemap and inspect representative pages |
+| P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
+| P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
+| P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
+| Optional | Custom domain and analytics decision | Configure a domain when chosen; revisit privacy requirements before introducing visitor analytics |
+
+Security review is pending. A dependency advisory was reported during the
+SEO work; that report is not a completed application security audit.
 
 ## User experience
 
 - **Search / jump (cmd+k)**: implemented. `Cmd/Ctrl+K` or `/` opens a modal
-  that fuzzy-filters over all topic titles, course titles, and descriptions,
+  that filters query terms over topic titles, course titles, and descriptions,
   with arrow-key navigation and Enter to jump straight to a topic.
-- **Deep-linkable anchors**: link directly to a section or a specific
-  self-test question (e.g. `#/topic/skew-and-salting#q3`) so a link can point
+- **Deep-linkable anchors (P2)**: link directly to a section or a specific
+  self-test question so a link can point
   at one question instead of "scroll down."
-- **Local-only read progress**: a quiet "x of 10 topics opened" indicator
-  stored in `localStorage`, shown as a dim checkmark on the topic list.
-  Signals progress without a streak, badge, or server-side tracking.
+- **Local-only read progress**: implemented. Overall, per-course, and
+  course-card meters use `localStorage`; opened topics have a "Read" label.
+  There is no account or cross-device sync.
+  Only the homepage overall progress bar shows a small, single-line
+  theme-pink disclaimer underneath:
+  "Clearing site data resets progress."
+  Homepage and course-card bars remain visible at zero progress; the reset
+  button appears once at least one topic has been opened.
 - **Copy buttons**: implemented. Any backtick-wrapped command or config key
   in prose (paragraphs, warnings, self-test, examples-to-attach) renders as
   an inline code chip with a hover-revealed copy icon, no content-model
   change required.
-- **Keyboard navigation**: arrow keys or `j`/`k` to move between self-test
+- **Keyboard navigation (P3)**: arrow keys or `j`/`k` to move between self-test
   questions, `esc` to go back a level.
-- **Print / offline view**: a print stylesheet so a topic page can be saved
+- **Print / PDF view (P2)**: a print stylesheet so a topic page can be saved
   as a PDF before an interview, without animation artifacts.
-- **Related-topic cross-links**: a short "see also" list at the bottom of a
+  Full offline browsing is separate scope and is not implemented.
+- **Related-topic cross-links (P2)**: a short "see also" list at the bottom of a
   detail page linking to topics that overlap (e.g. skew links to joins and
   partitioning).
 
 ## Security
 
-- **No user input, no attack surface by default**: the site is fully static
-  with no forms, no accounts, and no server-side code, so most common web
-  vulnerabilities (injection, auth bypass, CSRF) do not apply as long as it
-  stays that way.
-- **Content Security Policy**: add a CSP header (via hosting config or a
-  `<meta>` tag) restricting script/style sources to self, since the only
-  external resources today are Google Fonts.
-- **Subresource integrity**: pin Google Fonts or self-host them, so a
-  compromised font CDN cannot inject script.
-- **Dependency hygiene**: run `npm audit` periodically and keep Vite/
+- **Pre-publication security review (P0)**: the site is static, with no
+  accounts or backend, but still accepts search input and uses browser
+  storage, clipboard APIs, external fonts, and build/deployment dependencies.
+  Review these boundaries before launch; static hosting does not eliminate
+  client-side or supply-chain risks.
+- **Content Security Policy (review before launch)**: choose a policy
+  compatible with the early theme script, bundled assets, and font loading.
+  GitHub Pages does not offer arbitrary custom response headers; assess a
+  supported meta policy and document its limitations.
+- **External fonts (review before launch)**: consider self-hosting Google
+  Fonts to remove third-party font requests and simplify CSP. SRI for a
+  stylesheet alone does not pin the font files it references.
+- **Dependency hygiene (P0, then ongoing)**: resolve the reported advisory,
+  run `npm audit` periodically, and keep Vite/
   TypeScript patched, since the dev server and build tooling are the actual
   attack surface, not the shipped site.
 - **Embedded SVGs**: review any future animation SVGs for embedded
@@ -49,36 +75,41 @@ topic set.
 
 ## Deployment and productionizing
 
-- **Static hosting**: ship `npm run build`'s `dist/` output to a static host
-  (GitHub Pages, Netlify, Vercel, Cloudflare Pages, or S3 plus CloudFront).
-  No server process to manage.
-- **Custom domain plus HTTPS**: any of the above providers handle TLS
-  automatically; just point a domain at it.
+- **Static hosting (P1)**: publish the complete `dist/` output through a
+  GitHub Pages deployment workflow. The initial configured public URL is
+  `https://tarunrajnish.github.io/de-crash-course/`; deployment is pending.
+- **HTTPS (P1) / custom domain (optional)**: verify HTTPS at launch.
+  A later domain change requires DNS, Pages settings, and a rebuild with
+  `VITE_SITE_URL` set to the final URL.
 - **CI build check**: implemented (`.github/workflows/ci.yml`), running
-  `npm ci`, `tsc --noEmit`, and `npm run build` on every push/PR. Only runs
+  `npm ci`, `tsc --noEmit`, `npm run build`, and SEO tests on every push/PR. Only runs
   once this repo is actually hosted on GitHub (currently pushed to a local
   remote only).
-- **Cache headers**: fingerprinted asset filenames from Vite's build already
-  support long-lived caching; set `Cache-Control: public, max-age=31536000,
-  immutable` on hashed assets and a short TTL on `index.html`.
-- **404 handling**: configure the host to serve `index.html` for unknown
-  paths, since routing is hash-based and should not need this, but worth
-  confirming once a host is picked.
-- **Versioned releases**: tag releases in git once the site is deployed
+- **Cache headers (host-dependent)**: Vite fingerprints asset filenames.
+  GitHub Pages manages cache headers; custom header tuning is deferred
+  unless a future host or proxy exposes that control.
+- **SEO and direct URLs**: implemented. Static HTML is generated for every
+  course and topic, with crawlable links, unique titles/descriptions,
+  canonical and social metadata, a sitemap, and legacy hash-link redirects.
+  `VITE_SITE_URL` configures the public domain and path prefix.
+- **404 handling**: implemented as a dedicated, noindexed `404.html`.
+  Known routes have their own HTML files; confirm the host serves the custom
+  error page with HTTP 404 after deployment.
+- **Versioned releases (P1, after initial deployment)**: tag releases in git once the site is deployed
   somewhere real, so a bad deploy can be rolled back by redeploying a
   previous tag.
 
 ## Analytics
 
-- **Default: none.** The homepage explicitly promises "no tracking
-  dashboards," so any analytics addition should be weighed against that
-  promise before being added.
+- **Default: none.** Visitor analytics remain an explicit product/privacy
+  decision. Google Search Console can provide search impressions and
+  clicks without adding visitor-tracking scripts to the site.
 - **If ever added, prefer privacy-respecting, aggregate-only tools**:
   self-hosted Plausible or Umami, or Cloudflare's free web analytics. No
   cookies, no cross-site identifiers, no personal data.
-- **Local-only usage signal instead of server analytics**: reuse the
-  "topics opened" `localStorage` idea from the UX list above. It tells the
-  reader their own progress and tells nobody else anything.
+- **Local-only usage signal**: implemented as reading progress. It tells
+  readers their own progress without sending it to the site owner.
 - **If traffic metrics are ever wanted**, server/CDN access log counts
   (requests per path) are enough for "which topics get read" without adding
-  any client-side script at all.
+  any   client-side script at all, if the selected hosting provider exposes them.
+  GitHub Pages does not provide repository owners with raw access logs.

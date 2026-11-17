@@ -1,5 +1,5 @@
 import type { Route } from "./router";
-import { navigate } from "./router";
+import { routeToPath } from "./router";
 import { el } from "./dom";
 
 interface Crumb {
@@ -14,8 +14,11 @@ export function breadcrumb(crumbs: Crumb[]): HTMLElement {
     if (isLast) {
       nav.appendChild(el("span", { className: "breadcrumb-current", text: crumb.label }));
     } else {
-      const link = el("button", { className: "breadcrumb-link", text: crumb.label });
-      link.addEventListener("click", () => navigate(crumb.route));
+      const link = el("a", {
+        className: "breadcrumb-link",
+        text: crumb.label,
+        attrs: { href: routeToPath(crumb.route) },
+      });
       nav.appendChild(link);
       nav.appendChild(el("span", { className: "breadcrumb-sep", text: "/" }));
     }
@@ -24,7 +27,10 @@ export function breadcrumb(crumbs: Crumb[]): HTMLElement {
 }
 
 export function backButton(route: Route, label = "Back"): HTMLElement {
-  const btn = el("button", { className: "back-button", text: `\u2190 ${label}` });
-  btn.addEventListener("click", () => navigate(route));
+  const btn = el("a", {
+    className: "back-button",
+    text: `\u2190 ${label}`,
+    attrs: { href: routeToPath(route) },
+  });
   return btn;
 }

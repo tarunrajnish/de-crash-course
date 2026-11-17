@@ -3,6 +3,7 @@ import type { Course } from "../content/types";
 const STORAGE_KEY = "de-crash-course-progress";
 
 function readVisited(): Set<string> {
+  if (import.meta.env.SSR) return new Set();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return new Set();
@@ -23,6 +24,7 @@ function key(courseId: string, topicId: string): string {
 
 /** Marks a topic as read. Progress is stored locally in this browser only; there is no account or server-side sync. */
 export function markVisited(courseId: string, topicId: string): void {
+  if (import.meta.env.SSR) return;
   const visited = readVisited();
   visited.add(key(courseId, topicId));
   writeVisited(visited);

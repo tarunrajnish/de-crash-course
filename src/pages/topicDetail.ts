@@ -89,7 +89,7 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
     const figure = el("figure", { className: "animation-figure" });
     const img = el("img", {
       className: "animation-svg",
-      attrs: { src: topic.animation, alt: `${topic.title} animation` },
+      attrs: { src: `${import.meta.env.BASE_URL}${topic.animation.replace(/^\/+/, "")}`, alt: `${topic.title} animation` },
     });
     figure.appendChild(img);
     if (topic.animationCaption) {

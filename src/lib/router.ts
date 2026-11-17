@@ -1,11 +1,17 @@
 export type Route =
   | { name: "home" }
   | { name: "topic-list"; courseId: string }
-  | { name: "topic-detail"; courseId: string; topicId: string };
+  | { name: "topic-detail"; courseId: string; topicId: string }
+  | { name: "not-found" };
 
-export function parseHash(hash: string): Route {
-  const clean = hash.replace(/^#\/?/, "");
-  const parts = clean.split("/").filter(Boolean).map(decodeURIComponent);
+function parseSegments(path: string): Route {
+  let parts: string[];
+  try {
+    parts = path.split("/").filter(Boolean).map(decodeURIComponent);
+  } catch (error) {
+    if (error instanceof URIError) return { name: "not-found" };
+    throw error;
+  }
 
   if (parts.length === 0) return { name: "home" };
   if (parts[0] === "course" && parts.length === 2) {
@@ -14,26 +20,45 @@ export function parseHash(hash: string): Route {
   if (parts[0] === "course" && parts.length === 4 && parts[2] === "topic") {
     return { name: "topic-detail", courseId: parts[1], topicId: parts[3] };
   }
-  return { name: "home" };
+  return { name: "not-found" };
 }
 
-export function routeToHash(route: Route): string {
+export function parseHash(hash: string): Route {
+  return parseSegments(hash.replace(/^#\/?/, ""));
+}
+
+export function parsePath(pathname: string, base = import.meta.env.BASE_URL): Route {
+  const path = pathname.replace(/\/index\.html$/, "/");
+  if (path === base) return { name: "home" };
+  if (!path.startsWith(base)) return { name: "not-found" };
+  return parseSegments(path.slice(base.length));
+}
+
+export function routeToPath(route: Route, base = import.meta.env.BASE_URL): string {
   switch (route.name) {
     case "home":
-      return "#/";
+      return base;
     case "topic-list":
-      return `#/course/${encodeURIComponent(route.courseId)}`;
+      return `${base}course/${encodeURIComponent(route.courseId)}/`;
     case "topic-detail":
-      return `#/course/${encodeURIComponent(route.courseId)}/topic/${encodeURIComponent(route.topicId)}`;
+      return `${base}course/${encodeURIComponent(route.courseId)}/topic/${encodeURIComponent(route.topicId)}/`;
+    case "not-found":
+      return `${base}404.html`;
   }
 }
 
 export function navigate(route: Route) {
-  window.location.hash = routeToHash(route);
+  window.location.assign(routeToPath(route));
 }
 
 export function onRouteChange(handler: (route: Route) => void) {
-  const listener = () => handler(parseHash(window.location.hash));
+  const listener = () => {
+    if (window.location.hash.startsWith("#/")) {
+      window.location.replace(routeToPath(parseHash(window.location.hash)));
+      return;
+    }
+    handler(parsePath(window.location.pathname));
+  };
   window.addEventListener("hashchange", listener);
   listener();
   return () => window.removeEventListener("hashchange", listener);

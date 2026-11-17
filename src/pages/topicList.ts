@@ -1,7 +1,7 @@
 import { findCourse } from "../content";
 import { el } from "../lib/dom";
 import { icon, TOPIC_ICONS } from "../lib/icons";
-import { navigate } from "../lib/router";
+import { routeToPath } from "../lib/router";
 import { breadcrumb } from "../lib/breadcrumb";
 import { courseProgress, isVisited } from "../lib/progress";
 
@@ -31,7 +31,9 @@ export function renderTopicList(courseId: string): HTMLElement {
   root.appendChild(el("p", { className: "page-subtitle", text: course.shortDescription }));
 
   const { visited, total } = courseProgress(course);
-  const progressWrap = el("div", { className: "progress-meter" });
+  const progressWrap = el("div", {
+    className: "progress-meter",
+  });
   const progressBar = el("div", { className: "progress-meter-track" });
   const pct = total > 0 ? Math.round((visited / total) * 100) : 0;
   progressBar.appendChild(el("div", { className: "progress-meter-fill", attrs: { style: `width: ${pct}%` } }));
@@ -42,7 +44,10 @@ export function renderTopicList(courseId: string): HTMLElement {
   const list = el("div", { className: "topic-list" });
 
   course.topics.forEach((topic, i) => {
-    const card = el("button", { className: "topic-card" });
+    const card = el("a", {
+      className: "topic-card",
+      attrs: { href: routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id }) },
+    });
     card.appendChild(el("span", { className: "topic-index", text: String(i + 1).padStart(2, "0") }));
     const body = el("div", { className: "topic-card-body" });
     const titleRow = el("h3", { className: "topic-card-title" });
@@ -54,9 +59,6 @@ export function renderTopicList(courseId: string): HTMLElement {
     body.appendChild(titleRow);
     body.appendChild(el("p", { className: "topic-card-description", text: topic.shortDescription }));
     card.appendChild(body);
-    card.addEventListener("click", () =>
-      navigate({ name: "topic-detail", courseId: course.id, topicId: topic.id }),
-    );
     list.appendChild(card);
   });
 
