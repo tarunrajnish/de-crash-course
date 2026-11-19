@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const lineageAndIncidentResponse: Topic = {
   id: "lineage-and-incident-response",
+  glossary: ["Table-level lineage", "Column-level lineage", "OpenLineage", "Root-cause analysis"],
   title: "Lineage and incident response",
   shortDescription: "How data lineage turns \"which dashboard is wrong\" into \"which upstream job caused it,\" and what it costs to not have it.",
   sections: [
@@ -37,10 +38,17 @@ export const lineageAndIncidentResponse: Topic = {
     },
   ],
   videos: [{ title: "What is Data Lineage? (OpenLineage)", url: "https://www.youtube.com/watch?v=0PwkCWopbas" }],
-  examplesToAttach: [
-    "A lineage graph (from dbt docs, OpenLineage, or a warehouse-native lineage view) showing the upstream path into one of your production tables.",
-    "A postmortem or incident timeline showing how long it took to trace a bad number to its root cause, with or without lineage tooling available.",
-  ],
+  example: {
+    title: "Walk upstream from a 100x revenue error",
+    description: "The expected total is 120. Follow the dependency path backward from the visible symptom.",
+    steps: [
+      { label: "Dashboard: 12,000", detail: "Confirm the incorrect figure and identify its source metric." },
+      { label: "daily_revenue: 12,000", detail: "The aggregation matches its cleaned input; inspect that dependency." },
+      { label: "clean_orders: 12,000", detail: "A new transformation multiplied currency values by 100." },
+      { label: "raw_orders: 120", detail: "The source total is correct; the first divergence is in the cleaning step." },
+    ],
+    takeaway: "Repair the cleaning transformation and replay its affected dependents. Refreshing only the dashboard would keep reproducing the same bad number.",
+  },
   selfTest: [
     {
       question: "Why does column-level lineage answer an incident response question that table-level lineage can't?",

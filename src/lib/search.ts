@@ -1,42 +1,53 @@
 import { courses } from "../content";
+import { cheatsheetGroups, cheatsheetSearchText } from "../content/cheatsheet";
 import { el } from "./dom";
 import { icon } from "./icons";
 import { navigate } from "./router";
+import type { Route } from "./router";
 
 interface SearchEntry {
-  courseId: string;
-  courseTitle: string;
-  topicId: string;
-  topicTitle: string;
-  topicDescription: string;
+  route: Route;
+  fragment?: string;
+  title: string;
+  category: string;
   haystack: string;
 }
 
-function buildIndex(): SearchEntry[] {
+export function buildSearchIndex(): SearchEntry[] {
   const entries: SearchEntry[] = [];
   for (const course of courses) {
     for (const topic of course.topics) {
       entries.push({
-        courseId: course.id,
-        courseTitle: course.title,
-        topicId: topic.id,
-        topicTitle: topic.title,
-        topicDescription: topic.shortDescription,
+        route: { name: "topic-detail", courseId: course.id, topicId: topic.id },
+        title: topic.title,
+        category: course.title,
         haystack: `${course.title} ${topic.title} ${topic.shortDescription}`.toLowerCase(),
+      });
+    }
+  }
+  for (const group of cheatsheetGroups) {
+    for (const tip of group.tips) {
+      entries.push({
+        route: { name: "cheatsheet" },
+        fragment: tip.id,
+        title: tip.title,
+        category: `Cheatsheet / ${group.title}`,
+        haystack: cheatsheetSearchText(group, tip),
       });
     }
   }
   return entries;
 }
 
-function matches(entry: SearchEntry, query: string): boolean {
+export function matchesSearchQuery(text: string, query: string): boolean {
   const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
   if (terms.length === 0) return true;
-  return terms.every((term) => entry.haystack.includes(term));
+  const haystack = text.toLowerCase();
+  return terms.every((term) => haystack.includes(term));
 }
 
 export function initSearch(): void {
-  const index = buildIndex();
+  const index = buildSearchIndex();
 
   const overlay = el("div", { className: "search-overlay" });
   const modal = el("div", { className: "search-modal" });
@@ -45,7 +56,7 @@ export function initSearch(): void {
   inputRow.appendChild(icon("magnifier", "search-input-icon"));
   const input = el("input", {
     className: "search-input",
-    attrs: { type: "text", placeholder: "Jump to a topic\u2026", "aria-label": "Search topics" },
+    attrs: { type: "text", placeholder: "Search topics and quick tips", "aria-label": "Search topics and quick tips" },
   });
   inputRow.appendChild(input);
   modal.appendChild(inputRow);
@@ -53,7 +64,7 @@ export function initSearch(): void {
   const resultsList = el("div", { className: "search-results" });
   modal.appendChild(resultsList);
 
-  const emptyState = el("p", { className: "search-empty", text: "No topics match that search." });
+  const emptyState = el("p", { className: "search-empty", text: "No topics or quick tips match that search." });
 
   overlay.appendChild(modal);
 
@@ -75,11 +86,11 @@ export function initSearch(): void {
 
   function go(entry: SearchEntry): void {
     close();
-    navigate({ name: "topic-detail", courseId: entry.courseId, topicId: entry.topicId });
+    navigate(entry.route, entry.fragment);
   }
 
   function render(query: string): void {
-    currentResults = index.filter((entry) => matches(entry, query)).slice(0, 30);
+    currentResults = index.filter((entry) => matchesSearchQuery(entry.haystack, query)).slice(0, 30);
     activeIndex = 0;
 
     while (resultsList.firstChild) resultsList.removeChild(resultsList.firstChild);
@@ -94,8 +105,8 @@ export function initSearch(): void {
         className: `search-result${i === activeIndex ? " search-result--active" : ""}`,
         attrs: { type: "button" },
       });
-      item.appendChild(el("span", { className: "search-result-topic", text: entry.topicTitle }));
-      item.appendChild(el("span", { className: "search-result-course", text: entry.courseTitle }));
+      item.appendChild(el("span", { className: "search-result-topic", text: entry.title }));
+      item.appendChild(el("span", { className: "search-result-course", text: entry.category }));
       item.addEventListener("mouseenter", () => setActive(i));
       item.addEventListener("click", () => go(entry));
       resultsList.appendChild(item);
@@ -148,7 +159,7 @@ export function initSearch(): void {
 
   const trigger = el("button", {
     className: "search-trigger",
-    attrs: { type: "button", "aria-label": "Search topics" },
+    attrs: { type: "button", "aria-label": "Search topics and quick tips" },
   });
   trigger.appendChild(icon("magnifier", "search-trigger-icon"));
   trigger.appendChild(el("span", { className: "search-trigger-label", text: "Search" }));

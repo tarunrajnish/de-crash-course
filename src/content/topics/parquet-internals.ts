@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const parquetInternals: Topic = {
   id: "parquet-internals",
+  glossary: ["Row group", "Column chunk", "Page", "Footer", "Predicate pushdown"],
   title: "Parquet internals: row groups, column chunks, and pages",
   shortDescription: "The physical layout that makes columnar storage fast, and the statistics that let engines skip files entirely.",
   sections: [
@@ -46,10 +47,19 @@ export const parquetInternals: Topic = {
         "Row group statistics only eliminate a row group if the data is physically sorted or clustered on that column. An unsorted write pattern silently defeats file skipping even though the min/max values are still written correctly.",
     },
   ],
-  examplesToAttach: [
-    "A Spark query plan or Parquet metadata dump (parquet-tools meta) showing row group min/max stats actually pruning files for a date filter.",
-    "A before/after file size comparison between the same dataset stored as CSV versus Parquet.",
-  ],
+  example: {
+    title: "Skip row groups using their date ranges",
+    description: "Filter: event_date = 2026-02-14. The reader first checks stored min/max statistics for each row group.",
+    table: {
+      headers: ["Row group", "Minimum date", "Maximum date", "Read?"],
+      rows: [
+        ["RG1", "2026-01-01", "2026-01-31", "Skip"],
+        ["RG2", "2026-02-01", "2026-02-28", "Read candidate pages"],
+        ["RG3", "2026-03-01", "2026-03-31", "Skip"],
+      ],
+    },
+    takeaway: "Only RG2 can contain the requested date. Its statistics do not prove every row matches, so the reader must still apply the filter to candidate data.",
+  },
   selfTest: [
     {
       question: "What are the three levels of physical structure inside a Parquet file, from largest to smallest?",

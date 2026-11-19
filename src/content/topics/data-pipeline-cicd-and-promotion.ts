@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dataPipelineCicdAndPromotion: Topic = {
   id: "data-pipeline-cicd-and-promotion",
+  glossary: ["CI", "Expand-and-contract", "Shadow", "Deployment rollback", "Smoke test"],
   title: "Pipeline CI/CD, deployment, and environment promotion",
   shortDescription: "Promoting the same versioned artifact through development, staging, and production with tested data migrations and recovery plans.",
   sections: [
@@ -36,10 +37,17 @@ export const dataPipelineCicdAndPromotion: Topic = {
       warning: "Restoring one Delta table version is not a coordinated rollback of every downstream table or external system. Reconcile the full affected dependency path before reopening consumption.",
     },
   ],
-  examplesToAttach: [
-    "A CI pipeline and deployment manifest showing one artifact promoted across isolated environment targets.",
-    "An expand-and-contract rollout plan with consumer sign-off, comparison checks, and separate code and data recovery steps.",
-  ],
+  example: {
+    title: "Promote one identifiable release",
+    description: "Release r17 contains a packaged transformation and job configuration. Environment-specific destinations are supplied separately.",
+    steps: [
+      { label: "Build once", detail: "Run CI checks and produce artifact r17 with its code revision." },
+      { label: "Validate in staging", detail: "Deploy r17 into isolated tables; run smoke tests and reconcile outputs." },
+      { label: "Promote r17", detail: "Use the identical artifact with production configuration and identity." },
+      { label: "Recover deliberately", detail: "Roll code back to r16 if needed; separately repair any bad data already written." },
+    ],
+    takeaway: "Rebuilding independently for production can change dependencies. Promoting the tested artifact preserves release identity; data recovery still needs its own procedure.",
+  },
   selfTest: [
     { question: "Why promote the same build artifact across environments?", answer: "It preserves the tested code and dependency set. Environment-specific configuration changes, while the executable remains traceable to the same release." },
     { question: "Why are separate checkpoint paths required across environments?", answer: "Checkpoints hold source progress and sometimes state. Sharing them can make one environment consume or alter another environment's processing state." },

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const rddVsDataframe: Topic = {
   id: "rdd-vs-dataframe",
+  glossary: ["RDD", "DataFrame", "Catalyst", "Schema"],
   title: "RDDs vs. DataFrames",
   shortDescription: "Two APIs over the same engine: one untyped-to-Spark and opaque, one structured and optimizable.",
   sections: [

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const performanceCostAndCapacity: Topic = {
   id: "performance-cost-and-capacity",
+  glossary: ["Throughput", "Latency", "Physical plan", "Skew", "Spill"],
   title: "Performance, scalability, and cost trade-offs",
   shortDescription: "Finding the bottleneck, measuring cost per useful output, and choosing capacity against a service target.",
   sections: [
@@ -37,10 +38,19 @@ export const performanceCostAndCapacity: Topic = {
       warning: "A lower hourly rate can produce a higher total cost when a workload runs longer or retries more often. Compare complete successful runs at the required service level.",
     },
   ],
-  examplesToAttach: [
-    "A before/after tuning record with query plans, representative input, output reconciliation, runtime, and total cost.",
-    "A capacity calculation including peak arrival rate and the throughput needed to drain an outage backlog.",
-  ],
+  example: {
+    title: "Reduce scanned work before buying more workers",
+    description: "Illustrative measurements for the same source dataset and reconciled output. Baseline compute costs $0.20 per minute; doubling workers doubles that rate.",
+    table: {
+      headers: ["Plan", "Scanned", "Runtime", "Run cost"],
+      rows: [
+        ["Baseline", "100 GB", "30 min", "$6.00"],
+        ["Read required columns and prune", "20 GB", "10 min", "$2.00"],
+        ["Only double workers", "100 GB", "18 min", "$7.20"],
+      ],
+    },
+    takeaway: "The pruned plan meets a 15-minute deadline at lower cost. More workers improve this baseline's runtime but still miss that deadline and cost more.",
+  },
   selfTest: [
     { question: "Why can adding workers fail to speed up a job?", answer: "The bottleneck may be one skewed task, the driver, an external source, or queue policy. More parallel capacity only helps work that can use it." },
     { question: "What makes a performance comparison meaningful?", answer: "Comparable inputs, correctness, runtime and cache conditions, concurrency, and measured total cost against the same freshness or completion target." },

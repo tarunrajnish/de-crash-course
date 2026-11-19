@@ -8,8 +8,8 @@ require user authorization.
 
 | Priority | Work | Completion criterion |
 | --- | --- | --- |
-| P0: before publication | Security review and dependency remediation | Review tracked files and Git history for secrets/private material; resolve the reported high-severity build-tool dependency advisory; review rendering, clipboard handling, external resources, and Actions permissions |
-| P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, clipboard success/failure, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
+| P0: before publication | Security review and dependency remediation | Review tracked files and Git history for secrets/private material; resolve the reported high-severity build-tool dependency advisory; review rendering, external resources, and Actions permissions |
+| P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
 | P1: publish | Personal GitHub repository and Pages deployment | Commit approved changes, publish to the intended personal repository, and deploy the entire generated `dist/` through a Pages workflow; existing CI does not deploy |
 | P1: verify launch | Live-site checks and Search Console | Verify HTTPS, deep links, assets, legacy redirects, an actual HTTP 404, and canonical URLs; submit the sitemap and inspect representative pages |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
@@ -22,12 +22,39 @@ SEO work; that report is not a completed application security audit.
 
 ## User experience
 
+- **Concept organization**: 12 homepage tiles. Spark performance and
+  optimization combines joins, partitioning, skew, pushdown, and caching.
+  Existing lesson links and read progress are preserved after the merge.
+
+- **Quick-reference cheatsheet**: implemented with SQL, Python, and data
+  engineering groups, text/category filtering, shareable tip anchors, and
+  global search over explanations and code. Entries are stored in typed
+  content and pre-rendered. This personal interview reference is linked only
+  from the footer, keeping it outside the main course navigation.
+
+- **Inline concept definitions**: implemented across every topic. Curated
+  lesson vocabulary targets around five core concepts per topic, capped
+  at ten, with only the first body occurrence annotated.
+  Titles, headings, and repeats stay
+  plain. Terms use shared definitions and a theme-aware accent color.
+  Hover, keyboard focus, or tap opens an in-page explanation;
+  Escape or an outside click dismisses it. Tables, examples, and self-tests
+  use the same definitions without changing code text.
+
 - **Search / jump (cmd+k)**: implemented. `Cmd/Ctrl+K` or `/` opens a modal
   that filters query terms over topic titles, course titles, and descriptions,
-  with arrow-key navigation and Enter to jump straight to a topic.
+  plus cheatsheet titles, explanations, and code. Arrow keys select a result;
+  Enter opens the matching lesson or tip.
 - **Deep-linkable anchors (P2)**: link directly to a section or a specific
   self-test question so a link can point
   at one question instead of "scroll down."
+- **Previous / Next topic navigation**: implemented at the end of each
+  lesson, following the topic order within its concept. Previous is omitted
+  on the first topic, and Next is omitted on the last.
+- **Worked examples**: replaced all 45 attachment prompts with small data
+  tables or numbered step flows, reviewed from the last topic backward.
+  Each includes a setup and takeaway, uses both themes, and appears before
+  the self-test.
 - **Local-only read progress**: implemented. Overall, per-course, and
   course-card meters use `localStorage`; opened topics have a "Read" label.
   There is no account or cross-device sync.
@@ -36,10 +63,10 @@ SEO work; that report is not a completed application security audit.
   "Clearing site data resets progress."
   Homepage and course-card bars remain visible at zero progress; the reset
   button appears once at least one topic has been opened.
-- **Copy buttons**: implemented. Any backtick-wrapped command or config key
-  in prose (paragraphs, warnings, self-test, examples-to-attach) renders as
-  an inline code chip with a hover-revealed copy icon, no content-model
-  change required.
+- **Inline code formatting**: implemented. Any backtick-wrapped command or config key
+  in prose (paragraphs, warnings, self-test, worked examples) renders as
+  a styled inline code chip. Copy buttons and clipboard integration have
+  been removed.
 - **Keyboard navigation (P3)**: arrow keys or `j`/`k` to move between self-test
   questions, `esc` to go back a level.
 - **Print / PDF view (P2)**: a print stylesheet so a topic page can be saved
@@ -53,7 +80,7 @@ SEO work; that report is not a completed application security audit.
 
 - **Pre-publication security review (P0)**: the site is static, with no
   accounts or backend, but still accepts search input and uses browser
-  storage, clipboard APIs, external fonts, and build/deployment dependencies.
+  storage, external fonts, and build/deployment dependencies.
   Review these boundaries before launch; static hosting does not eliminate
   client-side or supply-chain risks.
 - **Content Security Policy (review before launch)**: choose a policy

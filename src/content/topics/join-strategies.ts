@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const joinStrategies: Topic = {
   id: "join-strategies",
+  glossary: ["Broadcast hash join", "Sort-merge join", "Shuffle hash join", "AQE", "Spill"],
   title: "Broadcast, sort-merge, and shuffle-hash joins",
   shortDescription: "How Spark picks a join strategy, and the one production failure every team eventually hits.",
   animation: "/assets/join-strategies.svg",
@@ -76,10 +77,18 @@ export const joinStrategies: Topic = {
   videos: [
     { title: "Spark joins explained: broadcast vs shuffle join, data skew", url: "https://www.youtube.com/watch?v=Et-Ia27N2JA" },
   ],
-  examplesToAttach: [
-    "A query plan where AQE upgraded a sort-merge join to broadcast at runtime.",
-    "An incident writeup from a broadcast() hint that worked in dev and OOM'd in prod.",
-  ],
+  example: {
+    title: "A faster join cannot repair duplicate lookup keys",
+    description: "Fact row S1 has customer_id 7 and amount 10. The dimension contains two matches for customer 7: US and CA. An inner join produces both rows below.",
+    table: {
+      headers: ["sale_id", "customer_id", "Dimension match", "Joined amount"],
+      rows: [
+        ["S1", "7", "US", "10"],
+        ["S1", "7", "CA", "10"],
+      ],
+    },
+    takeaway: "The joined amount sums to 20 even though the fact amount was 10. Broadcast hash and sort-merge joins both preserve this multiplicity; fix key uniqueness or the historical join predicate.",
+  },
   selfTest: [
     {
       question: "Why can't a left outer join broadcast the left side?",

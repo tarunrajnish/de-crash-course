@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const whatIsDeltaLake: Topic = {
   id: "what-is-delta-lake",
+  glossary: ["Delta Lake", "Transaction log", "Parquet", "Object storage", "Time travel"],
   title: "What is Delta Lake",
   shortDescription: "Plain files plus a transaction log: the thing that turns a data lake into something you can trust.",
   sections: [

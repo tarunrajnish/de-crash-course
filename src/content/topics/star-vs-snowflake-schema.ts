@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const starVsSnowflakeSchema: Topic = {
   id: "star-vs-snowflake-schema",
+  glossary: ["Star schema", "Snowflake schema", "Fact table", "Dimension table", "Normalization"],
   title: "Star schema vs. snowflake schema",
   shortDescription: "The two standard shapes for arranging facts and dimensions, and the normalization trade between them.",
   sections: [

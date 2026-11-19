@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const hybridSearchAndReranking: Topic = {
   id: "hybrid-search-and-reranking",
+  glossary: ["Hybrid search", "BM25", "RRF", "Reranking", "Cross-encoder"],
   title: "Hybrid search and reranking",
   shortDescription: "Why pure cosine similarity misses exact matches, and the two-stage retrieve-then-rerank pattern that fixes it.",
   sections: [
@@ -40,10 +41,19 @@ export const hybridSearchAndReranking: Topic = {
       warning: "Adding a reranker without first measuring retrieval with an evaluation set is a common mistake: a reranker can only reorder what the first-stage retrieval already found, so if the right chunk never makes the shortlist, no amount of reranking recovers it.",
     },
   ],
-  examplesToAttach: [
-    "A query that fails under pure vector search (an exact code or name) and succeeds once keyword search is added to the mix.",
-    "A before/after ranking of the same shortlist with and without a reranker, for one query from your own evaluation set.",
-  ],
+  example: {
+    title: "Recover an exact error code, then rerank",
+    description: "Query: \"fix E4521\". Vector and keyword search contribute candidates; a cross-encoder then orders their combined shortlist.",
+    table: {
+      headers: ["Document", "Vector rank", "Keyword rank", "Reranked"],
+      rows: [
+        ["D1: E4521 fix", "3", "1", "1"],
+        ["D2: general network repair", "1", "3", "2"],
+        ["D3: troubleshooting overview", "2", "2", "3"],
+      ],
+    },
+    takeaway: "Keyword retrieval protects the exact code match. Reranking can improve ordering only among retrieved candidates; it cannot recover a document absent from the shortlist.",
+  },
   selfTest: [
     {
       question: "Why can a pure vector search system fail on a query for a specific error code or product ID, even though it handles paraphrased questions well?",

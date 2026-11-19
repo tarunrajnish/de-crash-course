@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const agentLoopsAndToolCalling: Topic = {
   id: "agent-loops-and-tool-calling",
+  glossary: ["ReAct", "LangGraph", "Workflow state", "Tool calling"],
   title: "Agent loops: tool calling and taking action",
   shortDescription: "The reason-act-observe cycle underneath every tool-using agent, and what a framework like LangGraph buys you over a hand-rolled loop.",
   sections: [
@@ -46,10 +47,17 @@ export const agentLoopsAndToolCalling: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "Your hand-rolled agent loop's core function (the part that checks for tool calls and feeds results back in).",
-    "A short comparison note: the same agent task run through your hand-rolled loop versus a LangGraph version, with what differed.",
-  ],
+  example: {
+    title: "A tool-using loop that knows when to stop",
+    description: "Request: find the note explaining watermarks. The application allows at most three tool calls for this request.",
+    steps: [
+      { label: "Request", detail: "Give the model the question and the available search tool schema." },
+      { label: "Call a tool", detail: "The model requests search_library with query \"watermarks\"; the host runs it." },
+      { label: "Observe", detail: "The tool returns note N7 with a relevant excerpt and source location." },
+      { label: "Answer and stop", detail: "Return the explanation with a citation to N7; no further tool call is needed." },
+    ],
+    takeaway: "Feed the tool result back into the next model step. Persist the workflow state if resuming is required, and enforce the call limit in the host.",
+  },
   selfTest: [
     {
       question: "What is the ReAct pattern, and why is it a loop rather than a single request-response?",

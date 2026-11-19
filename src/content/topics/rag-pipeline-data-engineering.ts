@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const ragPipelineDataEngineering: Topic = {
   id: "rag-pipeline-data-engineering",
+  glossary: ["RAG", "Chunk", "Embedding", "Context window", "Groundedness"],
   title: "The data engineering behind RAG pipelines",
   shortDescription: "Chunking, index freshness, and the new observability problem retrieval-augmented generation introduces.",
   sections: [
@@ -31,10 +32,18 @@ export const ragPipelineDataEngineering: Topic = {
         "A RAG system that passed its evaluation once at launch and is never re-evaluated will silently degrade as source documents change, the embedding model is updated, or the underlying LLM is swapped by a vendor. None of those produce an error; they produce subtly worse answers that nobody is watching for.",
     },
   ],
-  examplesToAttach: [
-    "A chunking configuration (chunk size, overlap) alongside a retrieval-precision metric for that configuration, to show the trade-off empirically.",
-    "A retrieval evaluation dashboard tracking precision/recall and groundedness over time, with an annotated regression.",
-  ],
+  example: {
+    title: "Keep the answer-bearing sentence together",
+    description: "Source: \"Refunds are accepted within 30 days with a receipt.\" The table shows two possible chunks returned to generation.",
+    table: {
+      headers: ["Chunking outcome", "Returned context", "Evidence available"],
+      rows: [
+        ["Boundary splits the rule", "Refunds are accepted ...", "Timing and condition missing"],
+        ["Overlap retains the rule", "Refunds are accepted within 30 days with a receipt.", "Timing and receipt condition preserved"],
+      ],
+    },
+    takeaway: "Overlap can preserve answer-bearing context. Compare configurations on labeled retrieval questions and check that generated claims stay supported by the returned chunks.",
+  },
   selfTest: [
     {
       question: "Why does a RAG pipeline chunk documents instead of embedding each whole document as a single vector?",

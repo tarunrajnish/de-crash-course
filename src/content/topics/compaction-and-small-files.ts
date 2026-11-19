@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const compactionAndSmallFiles: Topic = {
   id: "compaction-and-small-files",
+  glossary: ["Small-file problem", "Compaction", "OPTIMIZE", "Z-ordering", "Liquid clustering"],
   title: "Compaction and the small-file problem",
   shortDescription: "Why thousands of tiny files quietly wreck read performance, and the operations that fix it at a cost.",
   sections: [
@@ -55,10 +56,18 @@ export const compactionAndSmallFiles: Topic = {
   videos: [
     { title: "Delta Lake Tutorial: VACUUM, OPTIMIZE and Z-Ordering Explained", url: "https://www.youtube.com/watch?v=8e2a1MYgdqU" },
   ],
-  examplesToAttach: [
-    "A file-count-over-time chart for a streaming table before and after adding a scheduled OPTIMIZE job.",
-    "A query plan or job timeline showing task scheduling overhead dominated by many small-file opens.",
-  ],
+  example: {
+    title: "The same rows with fewer file opens",
+    description: "An illustrative 128 MiB of data is rewritten without changing its 128,000 logical rows. Real physical sizes also depend on encoding and compression.",
+    table: {
+      headers: ["Layout", "Files", "Approx. size per file", "Rows"],
+      rows: [
+        ["Before compaction", "128", "1 MiB", "128,000"],
+        ["After compaction", "1", "128 MiB", "128,000"],
+      ],
+    },
+    takeaway: "Compaction reduces per-file overhead without changing logical results. Z-ordering or liquid clustering additionally changes which values are colocated for data skipping.",
+  },
   selfTest: [
     {
       question: "Why do streaming pipelines tend to produce a small-file problem even when total data volume isn't large?",

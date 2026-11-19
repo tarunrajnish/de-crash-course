@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const unityCatalogAndAccessControls: Topic = {
   id: "unity-catalog-and-access-controls",
+  glossary: ["Unity Catalog", "Least privilege", "Service principal", "Managed table", "External table", "Row filter", "Column mask"],
   title: "Governance, access controls, and Unity Catalog",
   shortDescription: "Least privilege, workload identities, governed storage, lineage, and the limits of catalog enforcement.",
   sections: [
@@ -36,10 +37,19 @@ export const unityCatalogAndAccessControls: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A least-privilege access matrix for analysts, ingestion jobs, transformation jobs, and deployment identities.",
-    "An access test showing a denied sensitive-column read and a storage-IAM check for possible catalog bypass.",
-  ],
+  example: {
+    title: "Separate table access from storage access",
+    description: "Illustrative least-privilege access. Required parent-catalog and schema USE privileges are assumed; the analyst view excludes direct access to sensitive raw fields.",
+    table: {
+      headers: ["Identity", "Table or view access", "Direct cloud storage"],
+      rows: [
+        ["Analyst", "SELECT on approved masked view", "No object-storage access"],
+        ["Ingestion job", "MODIFY on raw.orders", "Raw input/output prefix only"],
+        ["Transform job", "SELECT raw; MODIFY curated", "Approved input/output prefixes only"],
+      ],
+    },
+    takeaway: "A restricted catalog view cannot protect raw files if the analyst also has unrestricted object-storage permissions. Test both access paths.",
+  },
   selfTest: [
     { question: "What privileges does a typical Unity Catalog table reader need?", answer: "USE CATALOG, USE SCHEMA, and SELECT on the relevant objects, obtained directly or through applicable grants. Effective access also depends on the environment and access path." },
     { question: "Why prefer a service principal for scheduled jobs?", answer: "It gives the workload a stable, separately reviewable identity whose permissions and lifecycle are independent of an employee's personal account." },

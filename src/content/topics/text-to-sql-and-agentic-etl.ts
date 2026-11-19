@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const textToSqlAndAgenticEtl: Topic = {
   id: "text-to-sql-and-agentic-etl",
+  glossary: ["Text-to-SQL", "Agentic ETL", "DDL", "AI agent"],
   title: "Text-to-SQL and agentic ETL",
   shortDescription: "LLMs that write SQL and plan transformations still run entirely on top of your data engineering.",
   sections: [
@@ -29,10 +30,19 @@ export const textToSqlAndAgenticEtl: Topic = {
         "An agent that silently falls back to a wrong join key when the intended one is ambiguous will produce a plausible, wrong result with no error, unlike a hardcoded pipeline that would fail a schema check instead.",
     },
   ],
-  examplesToAttach: [
-    "A text-to-SQL query that produced a wrong result because a column was ambiguously named, alongside the fix (renaming or documenting the column).",
-    "A comparison of a fixed ETL DAG and an agent-planned equivalent for the same reconciliation task.",
-  ],
+  example: {
+    title: "A valid query can still use the wrong metric",
+    description: "Business definition: paid revenue sums amount only for rows whose status is paid. Here is the entire toy orders table.",
+    table: {
+      headers: ["order_id", "status", "amount"],
+      rows: [
+        ["101", "paid", "100"],
+        ["102", "refunded", "40"],
+        ["103", "pending", "60"],
+      ],
+    },
+    takeaway: "SUM(amount) returns 200. Filtering to status = paid returns the agreed revenue of 100. Schema descriptions and governed metric definitions must make that business choice explicit.",
+  },
   selfTest: [
     {
       question: "Why does text-to-SQL accuracy depend heavily on column and table naming?",

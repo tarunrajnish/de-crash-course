@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const contextPipelinesForAgents: Topic = {
   id: "context-pipelines-for-agents",
+  glossary: ["ETL", "RAG", "Tool schema", "Data contract", "Context window"],
   title: "Context pipelines: ETL for a new consumer",
   shortDescription: "Feeding an AI agent reliable, fresh context is the same extract-transform-load problem with a new destination.",
   sections: [
@@ -29,10 +30,17 @@ export const contextPipelinesForAgents: Topic = {
         "A retrieval index that updates daily but a policy document that changes hourly means an agent can act on guidance that was already superseded, with no indication in its context that anything is out of date.",
     },
   ],
-  examplesToAttach: [
-    "A diagram of a RAG pipeline (source, chunking/embedding, index, retrieval) labeled with its ETL equivalents.",
-    "An incident where an agent acted on stale retrieved context, and the freshness-monitoring fix.",
-  ],
+  example: {
+    title: "Carry a policy update into agent context",
+    description: "A refund policy changes from 14 days in v1 to 30 days in v2. The model stays the same; the context pipeline must publish the new evidence.",
+    steps: [
+      { label: "Extract v2", detail: "Read the current policy and retain its document ID and version." },
+      { label: "Transform", detail: "Chunk and embed the updated text, including the 30-day rule." },
+      { label: "Load the index", detail: "Replace active v1 chunks with v2 chunks and track publication time." },
+      { label: "Retrieve and cite", detail: "Answer the refund question from v2 and cite the current source." },
+    ],
+    takeaway: "An index still serving v1 can produce a 14-day answer despite a correct source update. Monitor freshness through to the retrieval endpoint.",
+  },
   selfTest: [
     {
       question: "In what sense is a RAG pipeline the same kind of problem as a classic ETL pipeline?",

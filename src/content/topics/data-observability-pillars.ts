@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dataObservabilityPillars: Topic = {
   id: "data-observability-pillars",
+  glossary: ["Data observability", "Freshness", "Volume", "Schema", "Distribution", "Lineage"],
   title: "The pillars of data observability",
   shortDescription: "Why a green pipeline run and correct data are two different claims, and the five signals that tell them apart.",
   sections: [
@@ -44,10 +45,20 @@ export const dataObservabilityPillars: Topic = {
     },
   ],
   videos: [{ title: "What is Data Observability?", url: "https://www.youtube.com/watch?v=Gg9SpB8rbqE" }],
-  examplesToAttach: [
-    "A volume or freshness alert from a monitoring tool (Monte Carlo, Metaplane, or a custom dbt/Airflow check) showing the historical baseline versus the anomalous run.",
-    "A before/after screenshot of a null-rate or distribution chart around the time a known data incident was detected.",
-  ],
+  example: {
+    title: "A successful run can still change the meaning of money",
+    description: "An upstream producer switches from dollars to cents without changing the amount column's type.",
+    table: {
+      headers: ["Signal", "Yesterday", "Today"],
+      rows: [
+        ["Job result", "Succeeded", "Succeeded"],
+        ["Row count", "10,000", "10,000"],
+        ["Latest data ready", "06:05 UTC", "06:05 UTC"],
+        ["Median amount", "25.00", "2,500.00"],
+      ],
+    },
+    takeaway: "Execution, volume, and freshness look healthy. The 100x distribution shift reveals a semantic break; use lineage to find the producer change.",
+  },
   selfTest: [
     {
       question: "Why is a successfully completed pipeline run not sufficient evidence that the data is correct?",

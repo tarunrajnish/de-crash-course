@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const orchestratorsAirflowDagsterPrefect: Topic = {
   id: "orchestrators-airflow-dagster-prefect",
+  glossary: ["Airflow", "Dagster", "Prefect", "DAG", "Software-defined asset"],
   title: "Airflow, Dagster, and Prefect",
   shortDescription: "The three orchestrators you'll actually run into, and the task-based vs asset-based split underneath them.",
   sections: [
@@ -44,9 +45,16 @@ export const orchestratorsAirflowDagsterPrefect: Topic = {
       },
     },
   ],
-  examplesToAttach: [
-    "An Airflow DAG definition next to a Dagster asset graph for the same pipeline, to compare what each framework tracks about the data versus the tasks.",
-  ],
+  example: {
+    title: "One dependency graph, concrete data outputs",
+    description: "A small orders pipeline produces three identifiable datasets, regardless of which orchestrator runs it.",
+    steps: [
+      { label: "Extract orders", detail: "Publish raw_orders version 17 with the source position." },
+      { label: "Clean orders", detail: "Read raw v17, validate keys, and publish clean_orders v9." },
+      { label: "Build daily revenue", detail: "Read clean v9, reconcile totals, and publish the reporting table." },
+    ],
+    takeaway: "Airflow can express the task dependencies, Dagster can declare the datasets as assets, and Prefect can coordinate the calls as a flow. Each still needs explicit freshness checks and retry-safe writes.",
+  },
   selfTest: [
     {
       question: "In Airflow's model, what does a successful task actually guarantee?",

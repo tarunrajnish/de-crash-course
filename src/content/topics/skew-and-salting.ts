@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const skewAndSalting: Topic = {
   id: "skew-and-salting",
+  glossary: ["Skew", "Hot key", "Salting", "AQE", "Broadcast"],
   title: "Data skew and salting",
   shortDescription: "The most misdiagnosed Spark problem, and the fix ladder from cheapest to manual.",
   animation: "/assets/skew-and-salting.svg",
@@ -79,10 +80,19 @@ export const skewAndSalting: Topic = {
   videos: [
     { title: "Spark joins explained: broadcast vs shuffle join, data skew", url: "https://www.youtube.com/watch?v=Et-Ia27N2JA" },
   ],
-  examplesToAttach: [
-    "A Stages tab Summary Metrics screenshot showing Max vs p75 duration on a skewed stage.",
-    "A groupBy().count().orderBy(desc) output identifying your own hot key.",
-  ],
+  example: {
+    title: "Split a hot key, then combine its partial sums",
+    description: "Customer A has eight records with amounts 1 through 8. Two salted work groups split the aggregation for that one customer.",
+    table: {
+      headers: ["Work group", "Amounts", "Partial sum"],
+      rows: [
+        ["A#0", "1, 3, 5, 7", "16"],
+        ["A#1", "2, 4, 6, 8", "20"],
+        ["Final A", "Combine 16 + 20", "36"],
+      ],
+    },
+    takeaway: "The final aggregate must remove the artificial salt and restore the original customer grain. For an average, combine sums and counts rather than averaging partial averages.",
+  },
   selfTest: [
     {
       question: "You raise shuffle partitions from 200 to 2000 and the stage takes the same time. What does that tell you?",

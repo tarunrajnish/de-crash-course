@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const databricksSqlAndPyspark: Topic = {
   id: "databricks-sql-and-pyspark",
+  glossary: ["Databricks", "PySpark", "SQL warehouse", "Window function", "UDF", "MERGE"],
   title: "Databricks engineering with SQL, PySpark, and Delta Lake",
   shortDescription: "Choosing compute, expressing transformations, and moving notebook experiments into repeatable Databricks jobs.",
   sections: [
@@ -36,10 +37,19 @@ export const databricksSqlAndPyspark: Topic = {
       warning: "MERGE does not automatically make every pipeline idempotent. Non-deterministic source selection, incrementing target values on every match, and duplicate source keys can still produce incorrect retries.",
     },
   ],
-  examplesToAttach: [
-    "Equivalent SQL and PySpark transformations with their physical plans and a fixture proving the same output grain.",
-    "A Databricks job definition and run record showing parameters, code revision, and a safely retried Delta write.",
-  ],
+  example: {
+    title: "Choose the latest order before summing",
+    description: "Incoming order versions contain one update. The output grain is one row per order, using the greatest source_version.",
+    table: {
+      headers: ["order_id", "source_version", "amount"],
+      rows: [
+        ["42", "1", "10"],
+        ["42", "2", "15"],
+        ["43", "1", "8"],
+      ],
+    },
+    takeaway: "ROW_NUMBER() by order_id, ordered by source_version descending, keeps (42, 2, 15) and (43, 1, 8). The total is 23; summing all incoming versions incorrectly gives 33.",
+  },
   selfTest: [
     { question: "What distinguishes Databricks, Spark, PySpark, and Delta Lake?", answer: "Databricks is the managed platform; Spark executes distributed computations; PySpark is Spark's Python API; Delta Lake provides transactional table storage." },
     { question: "A join doubles revenue without raising an error. What do you inspect first?", answer: "Check input grain and join-key cardinality, especially duplicate dimension keys or multiple effective-date matches. Compare counts and totals before and after the join." },

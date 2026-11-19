@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const jobStageTask: Topic = {
   id: "job-stage-task",
+  glossary: ["Job", "Stage", "Task", "Action", "Shuffle"],
   title: "Jobs, stages, and tasks",
   shortDescription: "How Spark breaks one line of code into the units of work that actually run on a cluster.",
   sections: [

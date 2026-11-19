@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const buildingARetrievalEvalSet: Topic = {
   id: "building-a-retrieval-eval-set",
+  glossary: ["Evaluation set", "Recall@k", "Precision@k", "MRR", "Regression test"],
   title: "Building a retrieval evaluation set",
   shortDescription: "The 30-50 question set with known answers that turns retrieval tuning from guessing into measurement.",
   sections: [
@@ -25,16 +26,25 @@ export const buildingARetrievalEvalSet: Topic = {
     {
       heading: "Metrics: recall, precision, and rank",
       paragraphs: [
-        "Recall@k asks: across the top k retrieved chunks, was the correct chunk present at all? This is the most important single metric for a RAG system, because if the right chunk never gets retrieved, no downstream reranking or generation step can recover from that.",
+        "Recall@k measures the fraction of all labeled relevant chunks found in the top k results. With one relevant chunk per question, it becomes a hit-or-miss check: was that chunk retrieved? With multiple relevant chunks, finding one of four gives recall of 25%. Retrieval coverage is foundational for a RAG system because later reranking cannot recover evidence missing from the candidate set.",
         "Precision@k asks the inverse: of the top k retrieved chunks, how many were actually relevant? A system can have perfect recall and poor precision, burying the right chunk among many irrelevant ones, which wastes context-window budget and can distract the generation step even when the answer is technically present.",
         "Mean Reciprocal Rank (MRR) measures how high the first relevant result ranks, averaged across all questions, rewarding systems that put the right chunk at or near position one rather than merely somewhere in the top k. Tracking recall, precision, and MRR together, rather than any single number, is what lets a specific change (say, adding a reranker) show exactly what it improved and what it didn't.",
       ],
     },
   ],
-  examplesToAttach: [
-    "Your own 30-50 question evaluation set with labeled correct chunks or answers, covering factual, paraphrased, and deliberately-unanswerable questions.",
-    "A before/after metrics table (recall@5, precision@5, MRR) comparing two retrieval configurations on the same eval set.",
-  ],
+  example: {
+    title: "Score three queries against labeled chunks",
+    description: "Each row lists the complete relevant set and the three returned chunks. A missing relevant result contributes zero reciprocal rank.",
+    table: {
+      headers: ["Query", "Relevant", "Top 3", "Recall@3", "Precision@3"],
+      rows: [
+        ["Q1", "A", "X, A, Y", "1/1", "1/3"],
+        ["Q2", "B, C", "B, Z, C", "2/2", "2/3"],
+        ["Q3", "D", "X, Y, Z", "0/1", "0/3"],
+      ],
+    },
+    takeaway: "The first relevant ranks are 2, 1, and missing, so MRR = (1/2 + 1 + 0) / 3 = 0.5. Q2 needs both labeled chunks for full recall.",
+  },
   selfTest: [
     {
       question: "Why does an evaluation set matter more than trying a few queries and judging the results by eye?",
@@ -59,7 +69,7 @@ export const buildingARetrievalEvalSet: Topic = {
     {
       question: "What does Mean Reciprocal Rank measure that recall@k alone doesn't?",
       answer:
-        "Recall@k only checks whether the correct chunk appears anywhere in the top k results. MRR specifically rewards the correct chunk appearing near the very top of the ranking (position one is ideal), capturing ranking quality rather than just presence-or-absence within a cutoff.",
+        "Recall@k measures how many of the labeled relevant chunks appear in the top k results, without rewarding their order within that cutoff. MRR rewards the first relevant chunk appearing near the top: rank one contributes 1, rank two contributes 0.5, and a query with no relevant result contributes 0. This captures early-result ordering while recall measures coverage.",
     },
   ],
 };

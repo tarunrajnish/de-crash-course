@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const schemaEnforcementEvolution: Topic = {
   id: "schema-enforcement-evolution",
+  glossary: ["Schema enforcement", "Schema evolution", "mergeSchema", "overwriteSchema"],
   title: "Schema enforcement vs. schema evolution",
   shortDescription: "Delta's default safety behavior, and the two explicit ways to opt out of it per write.",
   sections: [
@@ -15,7 +16,7 @@ export const schemaEnforcementEvolution: Topic = {
     {
       heading: "Two explicit ways to opt out",
       paragraphs: [
-        "mergeSchema permits additive evolution: a write can introduce new columns that the target table doesn't yet have, and Delta adds them to the schema rather than rejecting the write.",
+        "mergeSchema permits additive schema evolution: a write can introduce new columns that the target table doesn't yet have, and Delta adds them to the schema rather than rejecting the write.",
         "overwriteSchema replaces the table's schema outright with whatever the incoming write defines. This is meant for a deliberate full redefinition of a table, not routine evolution, since it can silently drop columns that aren't in the new write.",
       ],
       table: {
@@ -36,9 +37,19 @@ export const schemaEnforcementEvolution: Topic = {
       warning: "Disabling enforcement globally to unblock one write removes the safety net for every other write to that table.",
     },
   ],
-  examplesToAttach: [
-    "A failed write caused by schema enforcement, and the mergeSchema or overwriteSchema flag that resolved it correctly.",
-  ],
+  example: {
+    title: "Adding a column differs from replacing a schema",
+    description: "Existing nullable columns: order_id, amount, currency. Incoming data contains order_id, amount, coupon instead.",
+    table: {
+      headers: ["Write choice", "Resulting schema", "Effect"],
+      rows: [
+        ["Default append", "Unchanged", "Reject the new coupon column"],
+        ["Append with mergeSchema", "order_id, amount, currency, coupon", "Keep currency; incoming rows have NULL currency"],
+        ["Overwrite with overwriteSchema", "order_id, amount, coupon", "Replace data and schema; currency disappears"],
+      ],
+    },
+    takeaway: "Allowing an additive column and replacing an entire table schema are different operations. Choose the write mode and evolution option together, then validate consumers.",
+  },
   selfTest: [
     {
       question: "A write adds a new column that the target Delta table doesn't have. What happens by default, and what flag changes that?",

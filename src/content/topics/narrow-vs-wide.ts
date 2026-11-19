@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const narrowVsWide: Topic = {
   id: "narrow-vs-wide",
+  glossary: ["Narrow transformation", "Wide transformation", "Shuffle", "repartition", "coalesce"],
   title: "Narrow vs. wide transformations",
   shortDescription: "What causes a shuffle, and why it is the single most expensive thing Spark does.",
   animation: "/assets/narrow-vs-wide.svg",
@@ -65,10 +66,17 @@ export const narrowVsWide: Topic = {
   videos: [
     { title: "Spark joins explained: broadcast vs shuffle join, data skew", url: "https://www.youtube.com/watch?v=Et-Ia27N2JA" },
   ],
-  examplesToAttach: [
-    "A df.explain(True) output from one of your own jobs with an Exchange node highlighted.",
-    "A Stages tab screenshot from a job where coalesce(1) collapsed upstream parallelism.",
-  ],
+  example: {
+    title: "Watch records cross the shuffle boundary",
+    description: "Start with four numbers split across two input partitions, then retain even numbers and sum them by value modulo 2.",
+    steps: [
+      { label: "Input partitions", detail: "P0 contains [1, 2]; P1 contains [3, 4]." },
+      { label: "Narrow filter", detail: "P0 keeps [2]; P1 keeps [4]. Neither needs records from the other." },
+      { label: "Wide grouping", detail: "Shuffle by value % 2. Both surviving records belong to key 0 and must meet." },
+      { label: "Result", detail: "Key 0 has sum 2 + 4 = 6. The grouping introduces a shuffle boundary." },
+    ],
+    takeaway: "Filtering can stay partition-local. Grouping by a key changes which records must be processed together, which is why the plan needs an exchange.",
+  },
   selfTest: [
     {
       question: "You raise spark.sql.shuffle.partitions from 200 to 2000 and a stage's runtime doesn't change. What does that suggest?",

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dataProductOwnershipAndDelivery: Topic = {
   id: "data-product-ownership-and-delivery",
+  glossary: ["Data product", "Acceptance criteria", "SLO", "Architectural decision", "Data contract"],
   title: "Data-product ownership and pragmatic technical leadership",
   shortDescription: "Owning source-to-consumer outcomes, negotiating contracts across teams, and delivering in safe, measurable increments.",
   sections: [
@@ -36,10 +37,21 @@ export const dataProductOwnershipAndDelivery: Topic = {
       warning: "An undocumented compromise can become a permanent consumer assumption. Record limitations such as missing deletes or delayed corrections in the contract and revisit them before expanding usage.",
     },
   ],
-  examplesToAttach: [
-    "A one-page data-product contract covering consumers, grain, SLOs, access, ownership, and change management.",
-    "A delivery decision with alternatives, a safely reduced scope, measured outcomes, and a handover plan.",
-  ],
+  example: {
+    title: "A tiny orders data-product contract",
+    description: "A finance team needs yesterday's order lines for its morning revenue report. These agreements make the first release usable and supportable.",
+    table: {
+      headers: ["Decision", "Agreed value"],
+      rows: [
+        ["Consumer and grain", "Finance report; one row per order line"],
+        ["Freshness SLO", "Previous day published by 06:15 UTC"],
+        ["Quality gate", "Unique order_line_id; totals reconcile to source"],
+        ["Owner", "Orders data team; on-call group handles incidents"],
+        ["Change policy", "Publish v2 alongside v1 until consumers migrate"],
+      ],
+    },
+    takeaway: "A daily batch is a valid first release when it meets the agreed deadline. Real-time CDC can wait for a demonstrated consumer need.",
+  },
   selfTest: [
     { question: "What does end-to-end ownership include after a successful launch?", answer: "Monitoring, support, incident recovery, consumer communication, cost management, contract evolution, and eventual deprecation, with named responsibility throughout." },
     { question: "How do you handle a producer's breaking schema change?", answer: "Agree a compatible transition or versioned contract, assess downstream impact, assign migration owners, validate outputs, and retire the old interface after consumers have moved." },

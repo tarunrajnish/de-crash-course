@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const lakehouseTableFormats: Topic = {
   id: "lakehouse-table-formats",
+  glossary: ["Delta Lake", "Iceberg", "Hudi", "Hidden partitioning", "Copy-on-Write", "Merge-on-Read"],
   title: "The open table format landscape: Delta Lake, Iceberg, and Hudi",
   shortDescription: "Three different answers to the same problem: ACID transactions and time travel on top of plain Parquet files.",
   sections: [
@@ -55,10 +56,17 @@ export const lakehouseTableFormats: Topic = {
   videos: [
     { title: "A Thorough Comparison of Delta Lake, Iceberg and Hudi", url: "https://www.youtube.com/watch?v=Wx8G08jaedo" },
   ],
-  examplesToAttach: [
-    "A snapshot history or `DESCRIBE HISTORY` output showing time travel across table versions in your format of choice.",
-    "A write-amplification comparison between Copy-on-Write and Merge-on-Read for the same upsert workload, if using Hudi.",
-  ],
+  example: {
+    title: "A copy-on-write update publishes a new snapshot",
+    description: "A simplified update independent of a particular table format: file A holds order 1, and file B holds order 2.",
+    steps: [
+      { label: "Snapshot v7", detail: "Active files are A and B. Order 2 has amount 20." },
+      { label: "Write replacement C", detail: "Create a new file containing order 2 with amount 25; readers still use v7." },
+      { label: "Commit snapshot v8", detail: "Publish A and C as the active files. B is no longer active in v8." },
+      { label: "Retain old history", detail: "A v7 reader can still use B while retention keeps the required metadata and files." },
+    ],
+    takeaway: "The commit changes the table's visible file set. Copy-on-write uses replacement files; merge-on-read may instead combine base files with recorded changes.",
+  },
   selfTest: [
     {
       question: "What core problem do Delta Lake, Iceberg, and Hudi all solve that plain Parquet files in object storage don't?",

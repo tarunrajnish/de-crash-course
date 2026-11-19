@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const semanticLayersForAi: Topic = {
   id: "semantic-layers-for-ai",
+  glossary: ["Semantic layer", "dbt Semantic Layer", "Cube", "Analytical dimension", "Grain"],
   title: "Semantic layers, now even more necessary",
   shortDescription: "A governed mapping from business terms to exact SQL, and why AI consumers make it harder to skip.",
   sections: [

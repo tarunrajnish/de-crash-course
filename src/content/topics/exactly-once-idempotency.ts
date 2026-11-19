@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const exactlyOnceIdempotency: Topic = {
   id: "exactly-once-idempotency",
+  glossary: ["Exactly-once", "Idempotency", "Deduplication", "Offset", "Checkpoint"],
   title: "Exactly-once claims vs. end-to-end idempotency",
   shortDescription: "Spark's internal guarantee and your sink's guarantee are two different promises, often conflated into one.",
   sections: [
@@ -49,10 +50,20 @@ export const exactlyOnceIdempotency: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A sink write pattern from one of your own streaming jobs (delete-then-rewrite or MERGE) and the key it's keyed on.",
-    "A dedup key design that distinguishes duplicate sends from legitimate lifecycle updates.",
-  ],
+  example: {
+    title: "Deduplicate sends without discarding real updates",
+    description: "The sink holds one current row per order. It updates that row only when an incoming source version is newer.",
+    table: {
+      headers: ["Delivery", "Order / version / amount", "Target amount"],
+      rows: [
+        ["First event", "42 / v1 / 10", "10"],
+        ["Duplicate send", "42 / v1 / 10", "10"],
+        ["Legitimate update", "42 / v2 / 15", "15"],
+        ["Replay older event", "42 / v1 / 10", "15"],
+      ],
+    },
+    takeaway: "Order ID alone is too coarse for event deduplication: it would discard v2. Combine event/version identity with a sink rule that prevents older replays from overwriting newer state.",
+  },
   selfTest: [
     {
       question: "A team says \"our pipeline is exactly-once because Spark guarantees it.\" What's missing from that claim?",

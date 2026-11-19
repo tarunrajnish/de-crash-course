@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const deltaLogMerge: Topic = {
   id: "delta-log-merge",
+  glossary: ["Transaction log", "Optimistic concurrency", "MERGE", "Time travel", "VACUUM"],
   title: "Delta transaction log, optimistic concurrency, and MERGE failure modes",
   shortDescription: "The log is the table. Everything else, including every MERGE failure, follows from that.",
   sections: [
@@ -54,10 +55,19 @@ export const deltaLogMerge: Topic = {
   videos: [
     { title: "Delta Lake: Optimizing Merge (Databricks)", url: "https://www.youtube.com/watch?v=o2k9PICWdx0" },
   ],
-  examplesToAttach: [
-    "A DESCRIBE HISTORY output from one of your own tables showing a MERGE operation's metrics.",
-    "A MERGE statement you've written, with and without a partition predicate in the ON clause.",
-  ],
+  example: {
+    title: "A logical file removal still allows an older read",
+    description: "Version 7 stores order 42 with amount 10 in file A. A MERGE commits version 8 with replacement file B and amount 15.",
+    table: {
+      headers: ["Read request", "File needed", "Outcome"],
+      rows: [
+        ["Current version 8", "B", "amount = 15"],
+        ["Time travel to version 7", "A, while retained", "amount = 10"],
+        ["Version 7 after eligible A is vacuumed", "A is missing", "Old data can no longer be read"],
+      ],
+    },
+    takeaway: "Removing A from the active snapshot does not immediately delete it. VACUUM physically removes eligible old files, so recovery and time-travel requirements must inform retention.",
+  },
   selfTest: [
     {
       question: "Why do Delta readers never block on a concurrent writer?",

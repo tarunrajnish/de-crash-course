@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const watermarksStateEviction: Topic = {
   id: "watermarks-state-eviction",
+  glossary: ["Event time", "Processing time", "Watermark", "Operator state", "Deduplication"],
   title: "Event time, processing time, watermarks, and state eviction",
   shortDescription: "How Structured Streaming bounds state, and the trade every watermark setting makes explicit.",
   sections: [
@@ -54,10 +55,19 @@ export const watermarksStateEviction: Topic = {
   videos: [
     { title: "Late Data Processing, Watermarks, and Window Operations in Spark Streaming", url: "https://www.youtube.com/watch?v=4DT528dAjtU" },
   ],
-  examplesToAttach: [
-    "A streaming query progress log showing watermark advancing alongside state size over several batches.",
-    "A dedup key design for one of your own event-lifecycle streams.",
-  ],
+  example: {
+    title: "An advanced watermark bounds a windowed aggregation",
+    description: "Assume a single-input, ten-minute tumbling aggregation has advanced its watermark to 10:11 after observing event time 10:21 with a ten-minute delay.",
+    table: {
+      headers: ["Item", "Event time or interval", "Effect"],
+      rows: [
+        ["New event", "10:15", "Within the lateness guarantee"],
+        ["Older event", "10:05", "Outside the guarantee; may be dropped"],
+        ["Retained window", "[10:00, 10:10)", "Eligible for finalization and state eviction"],
+      ],
+    },
+    takeaway: "The watermark follows observed event-time progress. It does not mean every older event is always dropped, and the exact eviction rule depends on the stateful operator.",
+  },
   selfTest: [
     {
       question: "What does withWatermark(\"ts\", \"10 minutes\") actually bound?",

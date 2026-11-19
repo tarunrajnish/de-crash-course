@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const schedulingVsEventDriven: Topic = {
   id: "scheduling-vs-event-driven",
+  glossary: ["Cron", "Event-driven", "Sensor", "Polling", "Manifest"],
   title: "Time-based scheduling vs event-driven triggering",
   shortDescription: "Two ways to decide when a pipeline runs, and why most real systems end up using both.",
   sections: [
@@ -37,10 +38,19 @@ export const schedulingVsEventDriven: Topic = {
     },
   ],
   videos: [{ title: "Airflow Sensors Explained", url: "https://www.youtube.com/watch?v=IH1-0hwFEz8" }],
-  examplesToAttach: [
-    "A DAG schedule interval alongside the actual, measured upstream completion times over a week, to show how much buffer the fixed schedule really has.",
-    "A sensor configuration (poke interval, timeout, reschedule mode) and the reasoning for those specific values.",
-  ],
+  example: {
+    title: "A fixed start time sometimes outruns the source",
+    description: "The downstream job is scheduled for 06:10 UTC. A ready event is emitted only after the upstream batch is fully committed.",
+    table: {
+      headers: ["Day", "Upstream ready", "06:10 schedule", "Ready-event trigger"],
+      rows: [
+        ["Monday", "06:02", "Data ready", "Start after 06:02"],
+        ["Tuesday", "06:12", "Starts too early", "Start after 06:12"],
+        ["Wednesday", "06:04", "Data ready", "Start after 06:04"],
+      ],
+    },
+    takeaway: "Use a completion signal or sensor when readiness varies. A first-file arrival is insufficient if more files are still being written; add a timeout and an escalation path.",
+  },
   selfTest: [
     {
       question: "What assumption does a purely time-based schedule make, and what happens when that assumption is wrong?",

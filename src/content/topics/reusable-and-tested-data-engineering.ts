@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const reusableAndTestedDataEngineering: Topic = {
   id: "reusable-and-tested-data-engineering",
+  glossary: ["Unit test", "Integration test", "Contract testing", "Failure injection", "Idempotency"],
   title: "Reusable frameworks, coding standards, and automated testing",
   shortDescription: "Sharing reliable ingestion mechanics while keeping business rules explicit and testing the failure paths that matter.",
   sections: [
@@ -29,10 +30,20 @@ export const reusableAndTestedDataEngineering: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A reusable ingestion component with validated configuration, structured errors, and a documented extension point.",
-    "A test suite showing fixture-based transformation tests and an integration test for a safely retried write.",
-  ],
+  example: {
+    title: "One transformation rule, four useful fixtures",
+    description: "Rule: retain the latest version per order. Reject missing keys and conflicting values at the same version; a retry must preserve the target.",
+    table: {
+      headers: ["Case", "Input", "Expected result"],
+      rows: [
+        ["First load", "(42, v1, 10), (42, v2, 15)", "Keep (42, v2, 15)"],
+        ["Retry", "The same two records again", "Target remains (42, v2, 15)"],
+        ["Version conflict", "(42, v2, 15), (42, v2, 99)", "Reject the ambiguous pair"],
+        ["Missing key", "(NULL, v1, 10)", "Reject or quarantine by policy"],
+      ],
+    },
+    takeaway: "The transformation tests need only small fixtures. An integration test must also prove the actual storage write stays safe across a retry.",
+  },
   selfTest: [
     { question: "Which concerns are good candidates for a shared pipeline framework?", answer: "Repeated mechanics such as validation, run logging, safe retries, and publication checks. Keep varying business semantics explicit rather than hiding them behind generic defaults." },
     { question: "Why do passing fixture tests leave integration risks?", answer: "Fixtures do not reproduce runtime permissions, transactional storage behavior, connector compatibility, or checkpoint recovery. Those need tests at the actual system boundaries." },

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const cachingVsCheckpointing: Topic = {
   id: "caching-vs-checkpointing",
+  glossary: ["Cache", "Checkpoint", "localCheckpoint", "Lineage", "Fault tolerance"],
   title: "Caching vs. checkpointing",
   shortDescription: "Keeping a result around versus cutting the lineage that produced it: two different tools for two different problems.",
   sections: [
@@ -59,10 +60,19 @@ export const cachingVsCheckpointing: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A Storage tab screenshot showing a partially evicted cached dataframe.",
-    "A streaming job's checkpoint directory listing, showing offset and state files.",
-  ],
+  example: {
+    title: "What happens when a stored partition disappears?",
+    description: "Compare recovery paths for Spark batch computations. Streaming checkpoints instead track query progress and possibly operator state.",
+    table: {
+      headers: ["Situation", "Recovery path", "Important dependency"],
+      rows: [
+        ["Cached partition evicted", "Recompute the missing partition", "Retained lineage and readable inputs"],
+        ["Reliable checkpoint retained", "Read materialized checkpoint files", "Durable checkpoint storage"],
+        ["localCheckpoint block lost", "Recovery may fail", "Earlier lineage was cut; no durable copy is guaranteed"],
+      ],
+    },
+    takeaway: "Cache eviction can trigger recomputation. A reliable checkpoint cuts that earlier lineage by establishing a durable recovery boundary; localCheckpoint cannot promise the same resilience.",
+  },
   selfTest: [
     {
       question: "A cached dataframe shows 40% cached in the Storage tab. What happens on the next read of the uncached 60%?",

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const catalogsAndInterop: Topic = {
   id: "catalogs-and-interop",
+  glossary: ["Catalog", "Table format", "Hive Metastore", "Unity Catalog", "Iceberg REST Catalog"],
   title: "Catalogs and interop: why the metadata layer matters more than the table format",
   shortDescription: "Hive Metastore, Unity Catalog, and Iceberg REST Catalog: the layer that decides whether multiple engines can share a table.",
   sections: [
@@ -52,10 +53,18 @@ export const catalogsAndInterop: Topic = {
         "Agreeing on a table format across teams is not the same as agreeing on a catalog. Two catalogs pointing at the same underlying table without a sync mechanism produces silent, hard-to-diagnose stale reads that look like a data bug but are actually a metadata-resolution split-brain.",
     },
   ],
-  examplesToAttach: [
-    "A catalog configuration diagram showing which engines in your stack resolve table names through which catalog.",
-    "An incident writeup (real or hypothetical) involving two catalogs disagreeing about a table's current snapshot.",
-  ],
+  example: {
+    title: "Same table format, different current snapshots",
+    description: "Two engines resolve an orders name through separate, unsynchronized registrations of the same analytical table.",
+    table: {
+      headers: ["Reader", "Catalog resolves to", "Rows visible"],
+      rows: [
+        ["Spark via catalog A", "Snapshot 10", "12"],
+        ["Trino via catalog B", "Snapshot 9", "10"],
+      ],
+    },
+    takeaway: "Use an authoritative registration and compatible catalog integration so readers resolve the intended snapshot. Sharing a file format alone does not repair catalog drift.",
+  },
   selfTest: [
     {
       question: "What question does a catalog answer that a table format does not?",

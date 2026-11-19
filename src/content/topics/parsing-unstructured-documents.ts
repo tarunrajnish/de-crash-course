@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const parsingUnstructuredDocuments: Topic = {
   id: "parsing-unstructured-documents",
+  glossary: ["Docling", "Unstructured", "Whisper", "OCR", "Vision model"],
   title: "Parsing PDFs, audio, and images into text",
   shortDescription: "Turning a messy pile of PDFs, recordings, and screenshots into structured, citable text, the step before any of it can be embedded.",
   sections: [
@@ -41,10 +42,19 @@ export const parsingUnstructuredDocuments: Topic = {
       },
     },
   ],
-  examplesToAttach: [
-    "A before/after of a two-column PDF page: raw text extraction output versus layout-aware parser output.",
-    "A transcript segment from one of your own recordings showing text alongside its timestamp.",
-  ],
+  example: {
+    title: "Preserve structure and source location",
+    description: "Small illustrative outputs show what a downstream retrieval chunk would otherwise lose.",
+    table: {
+      headers: ["Source", "Weak extraction", "Useful extraction"],
+      rows: [
+        ["Two-column page", "A1 B1 A2 B2", "A1 A2, then B1 B2 in reading order"],
+        ["Spoken explanation", "Watermarks bound state.", "02:10-02:18: Watermarks bound state."],
+        ["Scanned error image", "Image pixels only", "OCR text: ERROR E4521"],
+      ],
+    },
+    takeaway: "Keep reading order for documents, timestamps for recordings, and recognized characters for text-heavy images. Those details make a retrieved result verifiable.",
+  },
   selfTest: [
     {
       question: "Why does naive text extraction from a multi-column PDF or a table often produce unusable output, and what do layout-aware parsers do differently?",

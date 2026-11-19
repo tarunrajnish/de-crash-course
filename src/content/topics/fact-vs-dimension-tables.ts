@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const factVsDimensionTables: Topic = {
   id: "fact-vs-dimension-tables",
+  glossary: ["Fact table", "Dimension table", "Grain", "Measure", "SCD"],
   title: "Fact tables, dimension tables, and grain",
   shortDescription: "The two table types every warehouse schema is built from, and the one decision that determines everything else.",
   sections: [

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const productionSupportAndRootCauseAnalysis: Topic = {
   id: "production-support-and-root-cause-analysis",
+  glossary: ["SLO", "SLI", "Root-cause analysis", "Runbook", "Reconciliation"],
   title: "Production support, troubleshooting, and root-cause analysis",
   shortDescription: "Turning freshness and quality alerts into bounded investigations, safe recovery, and durable preventive changes.",
   sections: [
@@ -35,10 +36,20 @@ export const productionSupportAndRootCauseAnalysis: Topic = {
       warning: "Repeatedly rerunning a job without checking its write semantics can duplicate records and destroy useful evidence. Establish the affected range and a safe retry strategy first.",
     },
   ],
-  examplesToAttach: [
-    "An SLO dashboard and alert linked to a runbook with an owner, containment steps, and recovery validation.",
-    "An incident timeline showing hypotheses, evidence, reconciliation, and preventive actions with assigned owners.",
-  ],
+  example: {
+    title: "Trace a revenue spike before rerunning anything",
+    description: "An illustrative incident: revenue doubles after a customer-dimension release, while order count stays unchanged.",
+    table: {
+      headers: ["Time (UTC)", "Evidence", "Action"],
+      rows: [
+        ["09:00", "New dimension version deployed", "Record the code and table versions"],
+        ["09:05", "Revenue check fails; orders unchanged", "Pause downstream publication"],
+        ["09:08", "Two active rows for customer C7", "Quarantine the bad dimension version"],
+        ["09:20", "Dimension repaired; totals reconcile", "Replay affected outputs and resume"],
+      ],
+    },
+    takeaway: "Rerunning the revenue join against the same duplicate keys would reproduce the error. Repair the first bad dependency, then validate downstream recovery.",
+  },
   selfTest: [
     { question: "How can every job be green while a freshness SLO fails?", answer: "Jobs may process stale or incomplete source input, publish to the wrong destination, or leave consumers reading an old output. Measure the consumer-visible data boundary." },
     { question: "What is the first goal during a bad-data incident?", answer: "Establish impact and contain further publication of incorrect data, while assigning ownership and preserving evidence for diagnosis." },

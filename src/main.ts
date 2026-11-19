@@ -5,9 +5,11 @@ import { clear, el } from "./lib/dom";
 import { initTheme, toggleTheme } from "./lib/theme";
 import { initSearch } from "./lib/search";
 import { applyPageMetadata } from "./lib/seo";
+import { initGlossaryTooltips } from "./lib/glossaryTooltip";
 
 initTheme();
 initSearch();
+initGlossaryTooltips();
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -34,5 +36,6 @@ onRouteChange((route) => {
 
   applyPageMetadata(route);
   app.appendChild(renderPage(route));
+  document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
 });
 

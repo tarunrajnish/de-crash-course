@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const partitioningFileSizing: Topic = {
   id: "partitioning-file-sizing",
+  glossary: ["Partition", "Cardinality", "AQE", "OPTIMIZE", "Small-file problem"],
   title: "Partition count, file sizing, and the small-file problem",
   shortDescription: "Why 200 shuffle partitions is almost always wrong, and how directory layout can destroy a table.",
   sections: [
@@ -55,9 +56,18 @@ export const partitioningFileSizing: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A table's file listing before and after an OPTIMIZE run, showing file count and average size.",
-  ],
+  example: {
+    title: "A target file size changes the work shape",
+    description: "Illustrative compaction with a target near 256 MiB. Both layouts represent the same roughly 1 GiB payload and logical rows.",
+    table: {
+      headers: ["Layout", "File count", "Approx. size per file"],
+      rows: [
+        ["Before OPTIMIZE", "256", "4 MiB"],
+        ["After OPTIMIZE", "4", "256 MiB"],
+      ],
+    },
+    takeaway: "Fewer tiny files reduce listing, open, and scheduling overhead. Storage file size and Spark shuffle partition count are separate controls and should be tuned for their own workloads.",
+  },
   selfTest: [
     {
       question: "A job shuffles 10 TB with the default 200 shuffle partitions. What's wrong, and what's the fix?",

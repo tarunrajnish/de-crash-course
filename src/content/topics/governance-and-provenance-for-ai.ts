@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const governanceAndProvenanceForAi: Topic = {
   id: "governance-and-provenance-for-ai",
+  glossary: ["Provenance", "Lineage", "RAG", "Fine-tuning"],
   title: "Governance and provenance, extended to model outputs",
   shortDescription: "Classic lineage answers what fed a table. AI systems also need what fed this specific answer.",
   sections: [

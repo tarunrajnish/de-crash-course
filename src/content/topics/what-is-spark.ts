@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const whatIsSpark: Topic = {
   id: "what-is-spark",
+  glossary: ["Spark", "Hadoop MapReduce", "Driver", "Executor", "Partition"],
   title: "What is Spark, and why does it exist",
   shortDescription: "A distributed engine for processing data too large for one machine, and the problem it replaced.",
   sections: [

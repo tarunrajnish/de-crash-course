@@ -1,5 +1,6 @@
 export type Route =
   | { name: "home" }
+  | { name: "cheatsheet" }
   | { name: "topic-list"; courseId: string }
   | { name: "topic-detail"; courseId: string; topicId: string }
   | { name: "not-found" };
@@ -14,6 +15,7 @@ function parseSegments(path: string): Route {
   }
 
   if (parts.length === 0) return { name: "home" };
+  if (parts.length === 1 && parts[0] === "cheatsheet") return { name: "cheatsheet" };
   if (parts[0] === "course" && parts.length === 2) {
     return { name: "topic-list", courseId: parts[1] };
   }
@@ -38,6 +40,8 @@ export function routeToPath(route: Route, base = import.meta.env.BASE_URL): stri
   switch (route.name) {
     case "home":
       return base;
+    case "cheatsheet":
+      return `${base}cheatsheet/`;
     case "topic-list":
       return `${base}course/${encodeURIComponent(route.courseId)}/`;
     case "topic-detail":
@@ -47,8 +51,8 @@ export function routeToPath(route: Route, base = import.meta.env.BASE_URL): stri
   }
 }
 
-export function navigate(route: Route) {
-  window.location.assign(routeToPath(route));
+export function navigate(route: Route, fragment?: string) {
+  window.location.assign(routeToPath(route) + (fragment ? `#${encodeURIComponent(fragment)}` : ""));
 }
 
 export function onRouteChange(handler: (route: Route) => void) {
@@ -59,7 +63,10 @@ export function onRouteChange(handler: (route: Route) => void) {
     }
     handler(parsePath(window.location.pathname));
   };
-  window.addEventListener("hashchange", listener);
+  const hashListener = () => {
+    if (window.location.hash.startsWith("#/")) listener();
+  };
+  window.addEventListener("hashchange", hashListener);
   listener();
-  return () => window.removeEventListener("hashchange", listener);
+  return () => window.removeEventListener("hashchange", hashListener);
 }

@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const featureStores: Topic = {
   id: "feature-stores",
+  glossary: ["Feature store", "Offline store", "Online store", "Point-in-time correctness", "Label leakage"],
   title: "Feature stores and point-in-time correctness",
   shortDescription: "A system that serves the same feature definitions to training and inference, and the leakage bug it exists to prevent.",
   sections: [
@@ -38,10 +39,18 @@ export const featureStores: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A training-serving skew report comparing offline vs. online values for the same feature and entity at the same timestamp.",
-    "A time-travel join query from your feature store showing the as-of timestamp logic used to build a training set.",
-  ],
+  example: {
+    title: "Join features as of the prediction time",
+    description: "A training label represents a prediction at 09:30. Both feature updates below became available at the time shown.",
+    table: {
+      headers: ["Feature available at", "customer C7 order_count"],
+      rows: [
+        ["09:00", "2"],
+        ["10:00", "3"],
+      ],
+    },
+    takeaway: "The 09:30 training example must use order_count = 2. Joining today's latest value, 3, leaks future information into that historical example.",
+  },
   selfTest: [
     {
       question: "What problem does a feature store solve that two separately-written implementations of the same feature do not?",

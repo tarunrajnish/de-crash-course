@@ -1,3 +1,5 @@
+import type { GlossaryTerm } from "./glossary";
+
 export interface ComparisonTable {
   caption?: string;
   headers: string[];
@@ -21,15 +23,25 @@ export interface SelfTestQuestion {
   answer?: string;
 }
 
+export type WorkedExample = {
+  title: string;
+  description: string;
+  takeaway: string;
+} & (
+  | { table: ComparisonTable; steps?: never }
+  | { steps: { label: string; detail: string }[]; table?: never }
+);
+
 export interface Topic {
   id: string;
   title: string;
   shortDescription: string;
+  glossary: GlossaryTerm[];
   animation?: string;
   animationCaption?: string;
   sections: ContentSection[];
   videos?: VideoLink[];
-  examplesToAttach?: string[];
+  example?: WorkedExample;
   selfTest: SelfTestQuestion[];
 }
 

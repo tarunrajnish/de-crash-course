@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const whereDataEngineeringIsHeading: Topic = {
   id: "where-data-engineering-is-heading",
+  glossary: ["Semantic layer", "Provenance", "Lakehouse", "Idempotency", "Schema evolution"],
   title: "Where data engineering is heading",
   shortDescription: "What's genuinely changed by 2026, what hasn't, and why the fundamentals still decide outcomes.",
   sections: [

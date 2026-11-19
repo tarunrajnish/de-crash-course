@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const anomalyDetectionInPipelines: Topic = {
   id: "anomaly-detection-in-pipelines",
+  glossary: ["Standard deviation", "Seasonality", "Isolation forest", "Multivariate", "Alert fatigue"],
   title: "Anomaly detection on pipeline metrics",
   shortDescription: "Threshold checks versus statistical models for catching row count, null rate, and distribution shifts, and why simpler usually wins.",
   sections: [
@@ -36,10 +37,20 @@ export const anomalyDetectionInPipelines: Topic = {
         "A team that silences or auto-acknowledges an alert channel because it pages too often has, in effect, turned off monitoring while still paying for it.",
     },
   ],
-  examplesToAttach: [
-    "A chart of a volume or null-rate metric with its historical band overlaid, from your own monitoring setup.",
-    "An alert history or on-call log showing an alert that was silenced or ignored due to a high false-positive rate.",
-  ],
+  example: {
+    title: "A weekend dip is normal; a Monday collapse is not",
+    description: "Illustrative expected bands account for day-of-week. A global minimum of 90,000 rows would incorrectly alert on both weekend runs.",
+    table: {
+      headers: ["Day", "Rows", "Expected band", "Decision"],
+      rows: [
+        ["Friday", "99,000", "90,000-110,000", "Normal"],
+        ["Saturday", "40,000", "35,000-45,000", "Normal"],
+        ["Sunday", "41,000", "35,000-45,000", "Normal"],
+        ["Monday", "20,000", "90,000-110,000", "Alert"],
+      ],
+    },
+    takeaway: "Compare each run with a relevant baseline. Accounting for seasonality reduces predictable false positives while preserving the alert on Monday's unexpected drop.",
+  },
   selfTest: [
     {
       question: "Why does a fixed row-count threshold often misfire on a table with strong day-of-week seasonality?",

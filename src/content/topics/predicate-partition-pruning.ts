@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const predicatePartitionPruning: Topic = {
   id: "predicate-partition-pruning",
+  glossary: ["Predicate pushdown", "Partition pruning", "Row group"],
   title: "Predicate pushdown vs. partition pruning",
   shortDescription: "Two different skipping mechanisms, both defeated by the same mistake.",
   sections: [
@@ -37,9 +38,19 @@ export const predicatePartitionPruning: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A scan node metric comparison between a pruned query and an unpruned one on the same table.",
-  ],
+  example: {
+    title: "Two filters eliminate different scan work",
+    description: "Query: date = 2026-11-02 AND amount > 100. Each listed file contains one row group for this small example.",
+    table: {
+      headers: ["File partition", "Row-group amount range", "Scan decision"],
+      rows: [
+        ["2026-11-01 / A", "20-200", "Skip by partition date"],
+        ["2026-11-02 / B", "10-80", "Skip by Parquet statistics"],
+        ["2026-11-02 / C", "90-150", "Read candidate data and apply the row filter"],
+      ],
+    },
+    takeaway: "Partition pruning removes A before reading its data. Predicate pushdown can avoid B's row group; C still needs row-level filtering.",
+  },
   selfTest: [
     {
       question: "Why does where date(ts) = '2026-01-01' defeat partition pruning even when ts is the partition column?",

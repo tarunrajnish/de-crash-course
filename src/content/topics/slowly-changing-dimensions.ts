@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const slowlyChangingDimensions: Topic = {
   id: "slowly-changing-dimensions",
+  glossary: ["SCD", "SCD type 1", "SCD type 2", "Effective-date range", "Natural key"],
   title: "Slowly changing dimensions (SCD types 0, 1, and 2)",
   shortDescription: "A customer moves, a product gets renamed: the three standard answers to 'what do we do about it.'",
   sections: [

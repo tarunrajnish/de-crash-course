@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const columnarVsRowStorage: Topic = {
   id: "columnar-vs-row-storage",
+  glossary: ["Row-oriented", "Columnar", "Parquet", "Predicate pushdown"],
   title: "Columnar vs. row-oriented storage",
   shortDescription: "The physical layout decision underneath every OLTP/OLAP trade-off, made concrete.",
   sections: [

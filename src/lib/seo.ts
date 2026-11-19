@@ -7,13 +7,18 @@ const HOME_DESCRIPTION =
   "Free data engineering interview prep covering Spark, Delta Lake, SQL, Databricks, pipelines, data quality, AI, and production engineering.";
 
 export function pageMetadata(route: Route) {
+  let canonicalRoute = route;
   let title = SITE_NAME;
   let description = HOME_DESCRIPTION;
   let found = route.name !== "not-found";
-  if (route.name === "topic-list") {
+  if (route.name === "cheatsheet") {
+    title = `SQL, Python & data engineering cheatsheet | ${SITE_NAME}`;
+    description = "Search quick SQL, MySQL, Python, and data engineering tips, common mistakes, code examples, and interview memory aids.";
+  } else if (route.name === "topic-list") {
     const course = findCourse(route.courseId);
     found = Boolean(course);
     if (course) {
+      canonicalRoute = { ...route, courseId: course.id };
       title = `${course.title} | ${SITE_NAME}`;
       description = course.shortDescription;
     }
@@ -21,6 +26,7 @@ export function pageMetadata(route: Route) {
     const entry = findTopic(route.courseId, route.topicId);
     found = Boolean(entry);
     if (entry) {
+      canonicalRoute = { ...route, courseId: entry.course.id };
       title = `${entry.topic.title} | ${SITE_NAME}`;
       description = entry.topic.shortDescription;
     }
@@ -29,7 +35,7 @@ export function pageMetadata(route: Route) {
   return {
     title: found ? title : `Page not found | ${SITE_NAME}`,
     description: found ? description : "This page could not be found. Browse the data engineering course topics.",
-    canonical: found ? new URL(routeToPath(route), site.origin).href : null,
+    canonical: found ? new URL(routeToPath(canonicalRoute), site.origin).href : null,
     type: route.name === "topic-detail" && found ? "article" : "website",
     found,
   };

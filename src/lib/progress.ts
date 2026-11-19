@@ -1,4 +1,5 @@
 import type { Course } from "../content/types";
+import { canonicalCourseId, courseAliases } from "../content";
 
 const STORAGE_KEY = "de-crash-course-progress";
 
@@ -22,16 +23,23 @@ function key(courseId: string, topicId: string): string {
   return `${courseId}/${topicId}`;
 }
 
+function hasVisited(visited: Set<string>, courseId: string, topicId: string): boolean {
+  const canonicalId = canonicalCourseId(courseId);
+  return visited.has(key(canonicalId, topicId))
+    || courseAliases.some(alias => alias.courseId === canonicalId
+      && alias.topicIds.includes(topicId) && visited.has(key(alias.id, topicId)));
+}
+
 /** Marks a topic as read. Progress is stored locally in this browser only; there is no account or server-side sync. */
 export function markVisited(courseId: string, topicId: string): void {
   if (import.meta.env.SSR) return;
   const visited = readVisited();
-  visited.add(key(courseId, topicId));
+  visited.add(key(canonicalCourseId(courseId), topicId));
   writeVisited(visited);
 }
 
 export function isVisited(courseId: string, topicId: string): boolean {
-  return readVisited().has(key(courseId, topicId));
+  return hasVisited(readVisited(), courseId, topicId);
 }
 
 export interface CourseProgress {
@@ -41,7 +49,7 @@ export interface CourseProgress {
 
 export function courseProgress(course: Course): CourseProgress {
   const visited = readVisited();
-  const count = course.topics.filter((t) => visited.has(key(course.id, t.id))).length;
+  const count = course.topics.filter((t) => hasVisited(visited, course.id, t.id)).length;
   return { visited: count, total: course.topics.length };
 }
 
@@ -51,7 +59,7 @@ export function overallProgress(courses: Course[]): CourseProgress {
   let total = 0;
   for (const course of courses) {
     total += course.topics.length;
-    count += course.topics.filter((t) => visited.has(key(course.id, t.id))).length;
+    count += course.topics.filter((t) => hasVisited(visited, course.id, t.id)).length;
   }
   return { visited: count, total };
 }

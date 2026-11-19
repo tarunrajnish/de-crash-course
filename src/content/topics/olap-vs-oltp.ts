@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const olapVsOltp: Topic = {
   id: "olap-vs-oltp",
+  glossary: ["OLAP", "OLTP", "Normalization", "Denormalization", "Columnar"],
   title: "OLAP vs. OLTP",
   shortDescription: "Two workloads with opposite access patterns, and why one database rarely serves both well.",
   sections: [

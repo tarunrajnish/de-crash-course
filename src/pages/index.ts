@@ -5,11 +5,13 @@ import { el } from "../lib/dom";
 import { renderHome } from "./home";
 import { renderTopicList } from "./topicList";
 import { renderTopicDetail } from "./topicDetail";
+import { renderCheatsheet } from "./cheatsheet";
 
 export function renderPage(route: Route): HTMLElement {
   if (pageMetadata(route).found) {
     switch (route.name) {
       case "home": return renderHome();
+      case "cheatsheet": return renderCheatsheet();
       case "topic-list": return renderTopicList(route.courseId);
       case "topic-detail": return renderTopicDetail(route.courseId, route.topicId);
     }

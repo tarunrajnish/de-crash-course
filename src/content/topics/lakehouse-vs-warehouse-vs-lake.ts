@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const lakehouseVsWarehouseVsLake: Topic = {
   id: "lakehouse-vs-warehouse-vs-lake",
+  glossary: ["Data warehouse", "Data lake", "Lakehouse", "Table format", "ACID"],
   title: "Warehouse, lake, lakehouse: what actually changed at each step",
   shortDescription: "The historical progression from expensive structure, to cheap chaos, to open files with warehouse-like guarantees.",
   sections: [
@@ -45,10 +46,19 @@ export const lakehouseVsWarehouseVsLake: Topic = {
         "Migrating a warehouse-native workload to a lakehouse purely to reduce storage cost, without validating query latency against the new stack's actual compaction and clustering state, can leave interactive dashboards measurably slower, since the warehouse's tightly integrated optimizer is no longer doing that work for you.",
     },
   ],
-  examplesToAttach: [
-    "A cost comparison (storage + compute) for the same dataset in a managed warehouse versus a lakehouse table format over a representative month.",
-    "A query latency comparison for the same BI dashboard running against a warehouse table versus an equivalent lakehouse table.",
-  ],
+  example: {
+    title: "Which physical copy counts as the current row?",
+    description: "Order 42 changes from amount 10 to 15. Old and replacement files remain in storage during the retention period.",
+    table: {
+      headers: ["Read approach", "Data included", "Reported amount"],
+      rows: [
+        ["Naive lake file glob", "Old row 10 plus replacement row 15", "25, incorrect"],
+        ["Lakehouse active snapshot", "Replacement file only", "15"],
+        ["Warehouse current table", "Updated order 42 row", "15"],
+      ],
+    },
+    takeaway: "The naive scan lacks active-file tracking. Transactional table metadata or managed database state identifies which version belongs in the current result.",
+  },
   selfTest: [
     {
       question: "What capability did a traditional data warehouse always have that a plain data lake lacked?",

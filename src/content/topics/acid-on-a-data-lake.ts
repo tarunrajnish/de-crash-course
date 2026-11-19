@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const acidOnADataLake: Topic = {
   id: "acid-on-a-data-lake",
+  glossary: ["ACID", "Atomicity", "Consistency", "Isolation", "Durability"],
   title: "ACID guarantees on a data lake",
   shortDescription: "The four database guarantees, and what each one means once your 'table' is just files in object storage.",
   sections: [

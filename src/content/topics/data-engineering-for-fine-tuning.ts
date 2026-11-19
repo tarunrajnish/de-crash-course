@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dataEngineeringForFineTuning: Topic = {
   id: "data-engineering-for-fine-tuning",
+  glossary: ["Fine-tuning", "Deduplication", "MinHash", "LSH", "Decontamination", "Data mix"],
   title: "Data engineering for fine-tuning datasets",
   shortDescription: "Deduplication, decontamination, and source mixing: the same lineage and versioning problems, applied to training data.",
   sections: [
@@ -38,10 +39,20 @@ export const dataEngineeringForFineTuning: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A near-duplicate detection report (MinHash/LSH) showing the fraction of a corpus flagged as duplicate before and after dedup.",
-    "A data-mix table showing token proportions by source across two training runs, alongside the eval metric deltas between them.",
-  ],
+  example: {
+    title: "Keep repeats and benchmarks out of training",
+    description: "These candidate decisions illustrate separate near-duplicate and evaluation-contamination checks.",
+    table: {
+      headers: ["ID / split", "Text", "Decision"],
+      rows: [
+        ["A / training", "Refunds are allowed within 30 days.", "Keep"],
+        ["B / training", "Refunds allowed within 30 days!", "Near-duplicate of A: remove"],
+        ["C / evaluation", "What is the refund window?", "Keep in held-out evaluation"],
+        ["D / proposed training", "What is the refund window?", "Matches evaluation C: exclude"],
+      ],
+    },
+    takeaway: "MinHash/LSH can propose near-duplicate candidates for validation. Cross-check training candidates against held-out evaluation data before training starts.",
+  },
   selfTest: [
     {
       question: "Why isn't exact-hash deduplication enough for a large training corpus?",

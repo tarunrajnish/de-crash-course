@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dataContractsAndDependencies: Topic = {
   id: "data-contracts-and-dependencies",
+  glossary: ["Data contract", "Schema drift", "Schema registry", "Contract testing"],
   title: "Data contracts and pipeline dependencies",
   shortDescription: "The agreement that makes a dataset safe to depend on, and what happens to downstream pipelines without one.",
   sections: [
@@ -36,10 +37,19 @@ export const dataContractsAndDependencies: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A schema registry compatibility check rejecting a backward-incompatible change before it reaches a topic consumers depend on.",
-    "A CI diff on a producer's pull request flagging a column rename against the documented contract for a downstream table.",
-  ],
+  example: {
+    title: "Validate meaning as well as column names",
+    description: "A consumer expects order_total in dollars. Review each proposed producer change before release.",
+    table: {
+      headers: ["Producer change", "Consumer impact", "Contract decision"],
+      rows: [
+        ["Rename order_total to amount", "Existing SELECT order_total fails", "Block until a compatible migration exists"],
+        ["Keep order_total but send cents", "Queries run; totals become 100x larger", "Block the semantic change"],
+        ["Add optional coupon_code", "Existing required fields still behave the same", "Allow if the agreed compatibility policy permits"],
+      ],
+    },
+    takeaway: "A structural compatibility check can catch the rename. Units, meanings, and change ownership must also be part of the contract.",
+  },
   selfTest: [
     {
       question: "What two things does a data contract cover, beyond just column names and types?",

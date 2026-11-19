@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const vectorEmbeddingsAndVectorStores: Topic = {
   id: "vector-embeddings-and-vector-stores",
+  glossary: ["Embedding", "Vector store", "ANN", "HNSW", "Cosine similarity"],
   title: "Vector embeddings and vector stores",
   shortDescription: "Dense vectors that capture semantic similarity, and the approximate-search infrastructure built to query them at scale.",
   sections: [
@@ -42,10 +43,19 @@ export const vectorEmbeddingsAndVectorStores: Topic = {
         "Teams sometimes treat an embedding model swap as a drop-in upgrade, deploy it, and get worse retrieval quality in production than before, because queries are now embedded with the new model while the stored document vectors are still from the old one. Mixing embedding model versions in the same similarity search silently produces nonsense distances.",
     },
   ],
-  examplesToAttach: [
-    "A re-embedding job's runtime and cost for a full collection, to show the scale of a model-version upgrade.",
-    "A staleness audit comparing a vector index's last-updated timestamp against its source document store.",
-  ],
+  example: {
+    title: "Find vectors that no longer match their source",
+    description: "Treat each indexed chunk as derived data tied to a document version and embedding-model version.",
+    table: {
+      headers: ["Source document", "Active index entry", "Required action"],
+      rows: [
+        ["Policy v3", "Policy v2", "Re-embed v3 and replace active v2 chunks"],
+        ["Guide v1", "Guide v1", "Keep the current entry"],
+        ["FAQ deleted", "FAQ v4 still present", "Delete or tombstone its indexed chunks"],
+      ],
+    },
+    takeaway: "A healthy similarity index can still return obsolete evidence. Propagate source updates and deletes, and rebuild consistently when the embedding model changes.",
+  },
   selfTest: [
     {
       question: "Why can't you directly compare an embedding produced by model A to one produced by model B?",

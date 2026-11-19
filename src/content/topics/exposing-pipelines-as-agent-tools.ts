@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const exposingPipelinesAsAgentTools: Topic = {
   id: "exposing-pipelines-as-agent-tools",
+  glossary: ["MCP", "Tool schema", "Read tool", "Action tool"],
   title: "Exposing pipelines as agent tools (MCP)",
   shortDescription: "Wrapping a retrieval pipeline as a standard set of callable tools so any agent client, not just one app, can use it.",
   sections: [
@@ -31,10 +32,19 @@ export const exposingPipelinesAsAgentTools: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "Your MCP server's tool list (names, descriptions, input schemas) for a retrieval pipeline you've wrapped as tools.",
-    "One example of an agent transcript calling a read tool followed by an action tool, showing the reasoning that led to each call.",
-  ],
+  example: {
+    title: "Three tools with different consequences",
+    description: "A retrieval service exposes narrow MCP tools. Inputs below are illustrative tool arguments.",
+    table: {
+      headers: ["Tool", "Example input", "Effect"],
+      rows: [
+        ["search_library", "query: watermarks", "Read matching chunks"],
+        ["get_transcript", "document: video7; start: 120s", "Read a source segment"],
+        ["create_study_note", "source: video7; key: note42", "Write a note after authorization"],
+      ],
+    },
+    takeaway: "Search and source lookup are read operations. Creating a note changes state, so validate permissions and use the request key to make retries safe.",
+  },
   selfTest: [
     {
       question: "Why isn't a working retrieval pipeline automatically something an AI agent can use?",

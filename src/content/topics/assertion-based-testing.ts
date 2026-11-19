@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const assertionBasedTesting: Topic = {
   id: "assertion-based-testing",
+  glossary: ["Unit test", "Data test", "Great Expectations", "dbt", "Referential integrity"],
   title: "Assertion-based data testing",
   shortDescription: "Expectation frameworks like Great Expectations and dbt tests, and the difference between testing your code and testing your data.",
   sections: [
@@ -37,10 +38,19 @@ export const assertionBasedTesting: Topic = {
     },
   ],
   videos: [{ title: "Great Expectations: Data Quality for Data Engineers", url: "https://www.youtube.com/watch?v=_O0r2mctRQU" }],
-  examplesToAttach: [
-    "A dbt test result (schema.yml test definitions plus the run output) from one of your own models.",
-    "A Great Expectations validation result (checkpoint output) showing a failed expectation and which rows triggered it.",
-  ],
+  example: {
+    title: "Two assertions catch different bad rows",
+    description: "The customers table contains only C1 and C2. Validate this incoming orders batch before publication.",
+    table: {
+      headers: ["order_id", "customer_id", "amount"],
+      rows: [
+        ["O1", "C1", "20"],
+        ["O2", "C9", "30"],
+        ["O1", "C2", "15"],
+      ],
+    },
+    takeaway: "Uniqueness fails because O1 occurs twice. Referential integrity fails because C9 has no customer row. Under a strict publication policy, block or quarantine this batch.",
+  },
   selfTest: [
     {
       question: "A transformation's unit tests all pass, but a not_null data test fails on the same model in production. What does this tell you?",

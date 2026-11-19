@@ -67,16 +67,16 @@ export const sparkDeltaBasicsCourse: Course = {
 
 export const transformationsJoinsCourse: Course = {
   id: "transformations-joins-skew",
-  title: "Joins, partitioning & skew",
-  shortDescription: "Transformations, shuffles, join strategies, and balanced partitions.",
-  topics: [narrowVsWide, joinStrategies, partitioningFileSizing, skewAndSalting],
-};
-
-export const pushdownCachingCourse: Course = {
-  id: "pushdown-and-caching",
-  title: "Predicate pushdown & caching",
-  shortDescription: "Skip unnecessary reads and reuse work with caching and checkpoints.",
-  topics: [predicatePartitionPruning, cachingVsCheckpointing],
+  title: "Spark performance & optimization",
+  shortDescription: "Joins, partitioning, skew, pruning, caching, and checkpoints.",
+  topics: [
+    narrowVsWide,
+    joinStrategies,
+    partitioningFileSizing,
+    skewAndSalting,
+    predicatePartitionPruning,
+    cachingVsCheckpointing,
+  ],
 };
 
 export const deltaStreamingInternalsCourse: Course = {
@@ -198,7 +198,6 @@ export const productionEngineeringAndOwnershipCourse: Course = {
 export const courses: Course[] = [
   sparkDeltaBasicsCourse,
   transformationsJoinsCourse,
-  pushdownCachingCourse,
   deltaStreamingInternalsCourse,
   dataModelingWarehousingCourse,
   orchestrationAndPipelinesCourse,
@@ -211,8 +210,20 @@ export const courses: Course[] = [
   productionEngineeringAndOwnershipCourse,
 ];
 
+export const courseAliases = [
+  {
+    id: "pushdown-and-caching",
+    courseId: transformationsJoinsCourse.id,
+    topicIds: [predicatePartitionPruning.id, cachingVsCheckpointing.id],
+  },
+];
+
+export function canonicalCourseId(courseId: string): string {
+  return courseAliases.find(alias => alias.id === courseId)?.courseId ?? courseId;
+}
+
 export function findCourse(courseId: string): Course | undefined {
-  return courses.find((c) => c.id === courseId);
+  return courses.find((c) => c.id === canonicalCourseId(courseId));
 }
 
 export function findTopic(courseId: string, topicId: string): { course: Course; topic: Course["topics"][number] } | undefined {

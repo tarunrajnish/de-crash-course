@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const dagsAndIdempotentDesign: Topic = {
   id: "dags-and-idempotent-design",
+  glossary: ["DAG", "Idempotency", "Logical date", "Non-deterministic"],
   title: "DAGs and idempotent pipeline design",
   shortDescription: "What a DAG actually encodes, and why every task in it has to be safe to run twice.",
   sections: [
@@ -29,10 +30,19 @@ export const dagsAndIdempotentDesign: Topic = {
         "A task that looks correct in a single clean run can double-count silently for months, because the bug only shows up on the one retry that happens after a flaky run. The bad numbers often get fixed by a resegmented dashboard before anyone finds the root cause.",
     },
   ],
-  examplesToAttach: [
-    "A query showing row counts for a partition before and after an orchestrator-triggered retry, confirming the count didn't change.",
-    "A task definition that reads the logical date from the DAG context instead of calling now() internally.",
-  ],
+  example: {
+    title: "Retry the same logical day without multiplying rows",
+    description: "Every attempt reads the same 120 source rows for logical date 2026-11-02. The two sink strategies produce different target counts.",
+    table: {
+      headers: ["Attempt", "Append every time", "Replace that date's partition"],
+      rows: [
+        ["First run", "120", "120"],
+        ["Retry 1", "240", "120"],
+        ["Retry 2", "360", "120"],
+      ],
+    },
+    takeaway: "Use the run's logical interval and a retry-safe sink operation. A stable row count is useful evidence, but keys and values must also match after replay.",
+  },
   selfTest: [
     {
       question: "What does a DAG encode, and what does it not encode?",

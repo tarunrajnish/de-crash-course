@@ -1,23 +1,23 @@
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { createServer } from "vite";
 import { parseHTML } from "linkedom";
 
 const server = await createServer({
   mode: "production",
-  server: { middlewareMode: true },
+  server: { middlewareMode: true, hmr: false, ws: false },
   appType: "custom",
   logLevel: "error",
 });
 after(() => server.close());
 
-const { courses } = await server.ssrLoadModule("/src/content/index.ts");
+const { courses, courseAliases } = await server.ssrLoadModule("/src/content/index.ts");
 const { parseHash, parsePath, routeToPath } = await server.ssrLoadModule("/src/lib/router.ts");
 const { pageMetadata } = await server.ssrLoadModule("/src/lib/seo.ts");
 const home = new URL(pageMetadata({ name: "home" }).canonical);
-const routes = [{ name: "home" }];
+const routes = [{ name: "home" }, { name: "cheatsheet" }];
 for (const course of courses) {
   routes.push({ name: "topic-list", courseId: course.id });
   for (const topic of course.topics) {
@@ -30,6 +30,44 @@ function outputFile(pathname) {
   const relative = pathname.slice(home.pathname.length);
   return resolve("dist", relative.endsWith("/") || !relative ? `${relative}index.html` : relative);
 }
+
+test("the homepage has 12 concept tiles and every lesson remains in exactly one concept", async () => {
+  const { document } = parseHTML(await readFile("dist/index.html", "utf8"));
+  assert.equal(document.querySelectorAll("a.tile").length, 12);
+  const topicIds = courses.flatMap(course => course.topics.map(topic => topic.id));
+  const topicFiles = (await readdir("src/content/topics")).filter(file => file.endsWith(".ts"));
+  assert.deepEqual(topicIds.sort(), topicFiles.map(file => file.slice(0, -3)).sort());
+  const merged = courses.find(course => course.id === "transformations-joins-skew");
+  assert.deepEqual(merged.topics.map(topic => topic.id), [
+    "narrow-vs-wide", "join-strategies", "partitioning-file-sizing", "skew-and-salting",
+    "predicate-partition-pruning", "caching-vs-checkpointing",
+  ]);
+});
+
+test("merged concept URLs retain static content and point to the surviving canonical pages", async () => {
+  for (const alias of courseAliases) {
+    const aliasRoutes = [
+      { name: "topic-list", courseId: alias.id },
+      ...alias.topicIds.map(topicId => ({ name: "topic-detail", courseId: alias.id, topicId })),
+    ];
+    for (const route of aliasRoutes) {
+      const current = { ...route, courseId: alias.courseId };
+      const metadata = pageMetadata(current);
+      const oldPath = routeToPath(route);
+      const { document } = parseHTML(await readFile(outputFile(oldPath), "utf8"));
+      assert.deepEqual(parsePath(oldPath), route);
+      assert.equal(pageMetadata(route).canonical, metadata.canonical);
+      assert.equal(document.title, metadata.title);
+      assert.equal(document.querySelector('link[rel="canonical"]').getAttribute("href"), metadata.canonical);
+      assert.ok(document.querySelector("h1"));
+      assert.equal(document.querySelectorAll(`a[href*="/course/${alias.id}/"]`).length, 0);
+      if (route.name === "topic-detail") {
+        assert.ok(document.querySelector(".content-section"));
+        assert.ok(document.querySelector(".topic-navigation"));
+      }
+    }
+  }
+});
 
 test("clean routes round-trip at project and custom-domain roots", () => {
   for (const base of ["/de-crash-course/", "/"]) {
@@ -77,7 +115,12 @@ test("every page ships full HTML, unique metadata, and working internal links wi
     assert.equal(document.querySelectorAll("h1").length, 1, pathname);
     assert.equal(document.querySelectorAll(".topic-card-visited").length, 0);
 
-    if (route.name === "home") assert.equal(document.querySelectorAll("a.tile").length, courses.length);
+    if (route.name === "home") {
+      assert.equal(document.querySelectorAll("a.tile").length, courses.length);
+      const cheatsheetPath = routeToPath({ name: "cheatsheet" });
+      assert.equal(document.querySelector(`#app a[href="${cheatsheetPath}"]`), null);
+      assert.equal(document.querySelector(`footer a[href="${cheatsheetPath}"]`)?.textContent, "Cheatsheet");
+    }
     if (route.name === "topic-list") {
       const course = courses.find(c => c.id === route.courseId);
       assert.equal(document.querySelectorAll("a.topic-card").length, course.topics.length);
@@ -93,6 +136,87 @@ test("every page ships full HTML, unique metadata, and working internal links wi
       assert.ok(!href.startsWith("#/"), `Legacy-only link in ${pathname}: ${href}`);
       const url = new URL(href, canonical);
       if (url.origin === home.origin) await access(outputFile(url.pathname));
+    }
+  }
+});
+
+test("worked examples replace attachment prompts with complete static tables or numbered flows", async () => {
+  const formats = new Set();
+  const plain = text => text.replace(/`([^`]+)`/g, "$1");
+  for (const course of courses) {
+    for (const topic of course.topics) {
+      const path = routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id });
+      const { document } = parseHTML(await readFile(outputFile(path), "utf8"));
+      assert.equal(document.querySelector(".callout-examples, .examples-list"), null, topic.id);
+      assert.equal(document.body.textContent.includes("Your examples to attach"), false, topic.id);
+      assert.equal("examplesToAttach" in topic, false, topic.id);
+      const sections = document.querySelectorAll(".worked-example");
+      assert.equal(sections.length, topic.example ? 1 : 0, topic.id);
+      if (!topic.example) continue;
+
+      const { example } = topic;
+      const section = sections[0];
+      assert.ok(example.title && example.description && example.takeaway, topic.id);
+      assert.equal(section.querySelector("h3").textContent, example.title);
+      assert.equal(section.querySelector(".worked-example-description").textContent, plain(example.description));
+      assert.equal(section.querySelector(".worked-example-takeaway").textContent,
+        `What to notice: ${plain(example.takeaway)}`);
+      assert.equal(document.getElementById(section.getAttribute("aria-labelledby")).textContent, "Worked example");
+      if (topic.selfTest.length) assert.ok(section.nextElementSibling.classList.contains("self-test-section"));
+
+      assert.notEqual(Boolean(example.table), Boolean(example.steps), `${topic.id}: choose one visual format`);
+      if (example.table) {
+        formats.add("table");
+        assert.ok(example.table.headers.length >= 2 && example.table.rows.length >= 2, topic.id);
+        assert.deepEqual([...section.querySelectorAll("th")].map(cell => cell.textContent), example.table.headers);
+        const rows = [...section.querySelectorAll("tbody tr")];
+        assert.equal(rows.length, example.table.rows.length, topic.id);
+        for (const [index, row] of rows.entries()) {
+          assert.equal(example.table.rows[index].length, example.table.headers.length, topic.id);
+          assert.deepEqual([...row.querySelectorAll("td")].map(cell => cell.textContent),
+            example.table.rows[index].map(plain));
+        }
+        assert.equal(section.querySelector(".example-flow"), null);
+      } else {
+        formats.add("steps");
+        assert.ok(example.steps.length >= 2, topic.id);
+        const steps = [...section.querySelectorAll("ol.example-flow > li")];
+        assert.equal(steps.length, example.steps.length, topic.id);
+        for (const [index, step] of steps.entries()) {
+          assert.ok(example.steps[index].label && example.steps[index].detail, topic.id);
+          assert.equal(step.querySelector("strong").textContent, example.steps[index].label);
+          assert.equal(step.querySelector("p").textContent, plain(example.steps[index].detail));
+        }
+        assert.equal(section.querySelector("table"), null);
+      }
+    }
+  }
+  assert.deepEqual(formats, new Set(["table", "steps"]));
+});
+
+test("topic navigation follows course order and omits unavailable neighbors at each boundary", async () => {
+  for (const course of courses) {
+    for (const [index, topic] of course.topics.entries()) {
+      const path = routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id });
+      const { document } = parseHTML(await readFile(outputFile(path), "utf8"));
+      const navigation = document.querySelector('nav[aria-label="Topic navigation"]');
+      assert.ok(navigation, topic.id);
+      assert.equal(document.querySelector(".page-topic-detail").lastElementChild, navigation);
+      for (const [direction, label, neighbor] of [
+        ["prev", "Previous", course.topics[index - 1]],
+        ["next", "Next", course.topics[index + 1]],
+      ]) {
+        const link = navigation.querySelector(`a[rel="${direction}"]`);
+        if (!neighbor) {
+          assert.equal(link, null, `${topic.id}: no ${direction} beyond course boundary`);
+          continue;
+        }
+        assert.ok(link, `${topic.id}: missing ${direction} link`);
+        assert.equal(link.textContent, label);
+        assert.equal(link.getAttribute("aria-label"), `${label} topic: ${neighbor.title}`);
+        assert.equal(link.getAttribute("href"),
+          routeToPath({ name: "topic-detail", courseId: course.id, topicId: neighbor.id }));
+      }
     }
   }
 });

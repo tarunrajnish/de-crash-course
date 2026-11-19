@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const backfillsAndReprocessing: Topic = {
   id: "backfills-and-reprocessing",
+  glossary: ["Backfill", "Full reprocessing", "Logical date", "Concurrency", "Idempotency"],
   title: "Backfills and reprocessing",
   shortDescription: "Running a pipeline for the past instead of the present, and why that's a different, riskier operation.",
   sections: [
@@ -35,10 +36,19 @@ export const backfillsAndReprocessing: Topic = {
       ],
     },
   ],
-  examplesToAttach: [
-    "A backfill run with its max_active_runs (or equivalent concurrency cap) set, compared to the default scheduling concurrency.",
-    "A diff showing a schema change that would make backfilling pre-change partitions produce incorrect data without a migration step.",
-  ],
+  example: {
+    title: "Repair one missing date and preserve its neighbors",
+    description: "Only the November 2 partition is missing. A date-scoped overwrite replaces that day using its replayable source input.",
+    table: {
+      headers: ["Logical date", "Source rows", "Target before", "Target after"],
+      rows: [
+        ["2026-11-01", "100", "100", "100"],
+        ["2026-11-02", "120", "0", "120"],
+        ["2026-11-03", "110", "110", "110"],
+      ],
+    },
+    takeaway: "Rerunning November 2 should leave 120 rows, not append another 120. Reconcile keys and totals as well as counts, and cap concurrent backfill runs.",
+  },
   selfTest: [
     {
       question: "What's the core difference between a scheduled run and a backfill, given the same task code?",

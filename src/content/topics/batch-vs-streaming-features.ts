@@ -2,6 +2,7 @@ import type { Topic } from "../types";
 
 export const batchVsStreamingFeatures: Topic = {
   id: "batch-vs-streaming-features",
+  glossary: ["Batch", "Streaming", "Operator state", "Watermark", "Checkpoint"],
   title: "Batch vs. streaming features",
   shortDescription: "Nightly aggregates vs. features computed as events arrive, and why most production feature sets use both.",
   sections: [
@@ -48,10 +49,19 @@ export const batchVsStreamingFeatures: Topic = {
     },
   ],
   videos: [{ title: "Streaming vs. Batch Processing", url: "https://www.youtube.com/watch?v=fw8pb4H1TB4" }],
-  examplesToAttach: [
-    "A consumer-lag dashboard for a streaming feature pipeline, showing the gap between event time and processing time.",
-    "A feature definition spec showing both a batch and a streaming materialization registered under the same logical feature name.",
-  ],
+  example: {
+    title: "Slow history and fast activity in one prediction",
+    description: "The nightly 30-day order count is 12. Three clicks arrive at 09:02, 09:03, and 09:04; the streaming feature counts clicks in the preceding ten minutes.",
+    table: {
+      headers: ["Prediction time", "Nightly order count", "Rolling click count"],
+      rows: [
+        ["09:00", "12", "0"],
+        ["09:05", "12", "3"],
+        ["09:15", "12", "0"],
+      ],
+    },
+    takeaway: "The historical feature stays fixed until its next batch refresh. The rolling feature changes as events arrive and age out, requiring correctly maintained and recoverable state.",
+  },
   selfTest: [
     {
       question: "Why would a team choose a batch job over a streaming job for a feature, given that streaming is always 'fresher'?",
