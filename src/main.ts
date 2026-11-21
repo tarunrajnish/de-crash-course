@@ -1,3 +1,4 @@
+import "./fonts.css";
 import "./style.css";
 import { renderPage } from "./pages";
 import { onRouteChange } from "./lib/router";

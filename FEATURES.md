@@ -8,7 +8,7 @@ require user authorization.
 
 | Priority | Work | Completion criterion |
 | --- | --- | --- |
-| P0: before publication | Security review and dependency remediation | Review tracked files and Git history for secrets/private material; resolve the reported high-severity build-tool dependency advisory; review rendering, external resources, and Actions permissions |
+| P0: before publication | Complete security launch gates | Local scoped review, dependency audit, secret scans, CSP, and self-hosted fonts completed; run configured CodeQL on GitHub and review public content before publication |
 | P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
 | P1: publish | Personal GitHub repository and Pages deployment | Commit approved changes, publish to the intended personal repository, and deploy the entire generated `dist/` through a Pages workflow; existing CI does not deploy |
 | P1: verify launch | Live-site checks and Search Console | Verify HTTPS, deep links, assets, legacy redirects, an actual HTTP 404, and canonical URLs; submit the sitemap and inspect representative pages |
@@ -17,8 +17,11 @@ require user authorization.
 | P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
 | Optional | Custom domain and analytics decision | Configure a domain when chosen; revisit privacy requirements before introducing visitor analytics |
 
-Security review is pending. A dependency advisory was reported during the
-SEO work; that report is not a completed application security audit.
+A scoped manual review and local dependency/secret scans were completed
+on 2026-11-20. No confirmed exploitable vulnerability, dependency advisory,
+or secret was found in those checks. CodeQL is configured but has not run
+on GitHub. Hosting checks and a public-content review
+remain launch gates; the checks are not a comprehensive security guarantee.
 
 ## User experience
 
@@ -78,22 +81,29 @@ SEO work; that report is not a completed application security audit.
 
 ## Security
 
-- **Pre-publication security review (P0)**: the site is static, with no
-  accounts or backend, but still accepts search input and uses browser
-  storage, external fonts, and build/deployment dependencies.
-  Review these boundaries before launch; static hosting does not eliminate
-  client-side or supply-chain risks.
-- **Content Security Policy (review before launch)**: choose a policy
-  compatible with the early theme script, bundled assets, and font loading.
-  GitHub Pages does not offer arbitrary custom response headers; assess a
-  supported meta policy and document its limitations.
-- **External fonts (review before launch)**: consider self-hosting Google
-  Fonts to remove third-party font requests and simplify CSP. SRI for a
-  stylesheet alone does not pin the font files it references.
-- **Dependency hygiene (P0, then ongoing)**: resolve the reported advisory,
-  run `npm audit` periodically, and keep Vite/
-  TypeScript patched, since the dev server and build tooling are the actual
-  attack surface, not the shipped site.
+- **Pre-publication security review (P0)**: scoped manual review completed
+  for rendering, routing, browser storage, external resources, static-build
+  logic, and CI. No confirmed exploitable vulnerability was identified.
+  Complete CodeQL execution and remaining hosting/public-content checks
+  before launch; static hosting still has client-side and supply-chain risks.
+- **Content Security Policy (implemented)**: generated pages include a
+  restrictive meta policy before resources load, with an exact hash for the
+  early theme script and same-origin scripts/styles/fonts/images. Inline
+  handlers/styles, dynamic code evaluation, connections, forms, objects,
+  and frames are blocked. Development HMR is unchanged. Meta policies cannot
+  enforce `frame-ancestors`; host-level controls remain deployment checks.
+- **Self-hosted fonts (implemented)**: Fraunces and Inter WOFF2 subsets and
+  SIL Open Font licenses are bundled locally, preserving typography without
+  Google Fonts requests.
+- **Dependency hygiene (implemented, ongoing)**: local `npm audit` found
+  zero advisories on 2026-11-20. CI and weekly Security runs audit all
+  dependencies, failing on high/critical findings. Dependabot checks npm
+  and Actions weekly. Review lower-severity findings and keep tooling patched.
+- **Secret and code scans (configured)**: checksum-pinned Gitleaks scans
+  fetched Git history, working files, and fresh production output. Local
+  scans found no secrets across 90 available commits and current files.
+  CodeQL's JavaScript/TypeScript security-extended workflow is pending its
+  first GitHub run. Actions use immutable SHAs and least-privilege tokens.
 - **Embedded SVGs**: review any future animation SVGs for embedded
   `<script>` tags before adding them to `public/assets/`, since inline SVG
   can execute script if not sanitized.
@@ -109,7 +119,7 @@ SEO work; that report is not a completed application security audit.
   A later domain change requires DNS, Pages settings, and a rebuild with
   `VITE_SITE_URL` set to the final URL.
 - **CI build check**: implemented (`.github/workflows/ci.yml`), running
-  `npm ci`, `tsc --noEmit`, `npm run build`, and SEO tests on every push/PR. Only runs
+  `npm ci`, dependency audit, `tsc --noEmit`, `npm run build`, and all tests on every push/PR. Only runs
   once this repo is actually hosted on GitHub (currently pushed to a local
   remote only).
 - **Cache headers (host-dependent)**: Vite fingerprints asset filenames.

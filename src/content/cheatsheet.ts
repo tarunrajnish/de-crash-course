@@ -108,6 +108,35 @@ WHERE rn IN (FLOOR((n + 1) / 2), FLOOR((n + 2) / 2));`,
 END`,
       },
       {
+        id: "sql-group-by-having",
+        title: "GROUP BY and HAVING",
+        paragraphs: [
+          "`GROUP BY` groups rows sharing values so aggregates such as `COUNT`, `SUM`, and `AVG` are computed per group. `WHERE` filters input rows before grouping; `HAVING` filters groups afterward, often using aggregate conditions.",
+        ],
+        code: `SELECT department, COUNT(*) AS n
+FROM employees
+WHERE active = 1
+GROUP BY department
+HAVING COUNT(*) >= 5;`,
+      },
+      {
+        id: "sql-gaps-and-islands",
+        title: "Gaps and islands: consecutive IDs",
+        paragraphs: [
+          "For unique integer IDs, filter eligible rows first, then compute the expression below: the difference stays constant within each consecutive-ID run. `GROUP BY grp HAVING COUNT(*) >= k` selects qualifying run keys; join those keys back to ranked rows to return every record in those runs. Missing/excluded IDs break runs. Consecutive dates need date-aware arithmetic; do not `PARTITION BY id`.",
+        ],
+        code: `id - ROW_NUMBER() OVER (ORDER BY id) AS grp`,
+      },
+      {
+        id: "sql-lag-lead",
+        title: "LAG and LEAD: neighboring rows",
+        paragraphs: [
+          "`LAG` reads earlier rows; `LEAD` reads later rows in window order. Offset defaults to 1. Ordered neighbors need not have consecutive IDs: check ID differences explicitly. For unique integer IDs, next IDs at +1/+2, neighbors at -1/+1, or previous IDs at -1/-2 identify every member of runs of at least three, with no upper bound: each row belongs to a consecutive triple. Filter eligibility before computing windows.",
+        ],
+        code: `LAG(col, offset) OVER (ORDER BY key)
+LEAD(col, offset) OVER (ORDER BY key)`,
+      },
+      {
         id: "sql-mysql-pivot",
         title: "MySQL 8+: pivot with conditional aggregation",
         paragraphs: [
@@ -127,6 +156,13 @@ FROM ranked GROUP BY rn ORDER BY rn;`,
         title: "Indexing vs. partitioning",
         paragraphs: [
           "Indexes accelerate row lookup and sometimes sorting. Partitioning divides a table; pruning skips irrelevant partitions. Combine them when useful, and align partition keys with filtering or retention needs.",
+        ],
+      },
+      {
+        id: "sql-database-sharding",
+        title: "Database sharding",
+        paragraphs: [
+          "Horizontally distributes rows across independent database nodes by a shard key, such as user_id. Scales storage/writes and can isolate workloads, but complicates routing, rebalancing, cross-shard joins/transactions, and hot keys. Choose a stable, high-cardinality, well-distributed key aligned with access patterns. Table partitioning subdivides data within a database system; sharding distributes it across independent nodes. Indexing, scale-up, or partitioning may suffice.",
         ],
       },
     ],
@@ -175,6 +211,13 @@ main = sum(matrix[i][i] for i in range(n))
 other = sum(matrix[i][n - 1 - i] for i in range(n))`,
       },
       {
+        id: "python-dict-complexity",
+        title: "dict: hash-table complexity",
+        paragraphs: [
+          "Python's built-in `dict` uses a hash table: lookup, update, and deletion average O(1); insertion is amortized O(1). A resize can make one insertion O(n); pathological collisions can make operations O(n). Key hashing/equality costs also matter. Balanced-tree maps typically provide O(log n) operations. Space is O(n) for n entries, including table capacity/overhead; counting the full reachable object graph adds key/value memory costs.",
+        ],
+      },
+      {
         id: "python-perfect-square-factors",
         title: "Perfect squares and factor pairs",
         paragraphs: [
@@ -190,6 +233,45 @@ is_square = root * root == n`,
     id: "data-engineering",
     title: "Data engineering",
     tips: [
+      {
+        id: "de-pyspark-session",
+        title: "PySpark: SparkSession and CSV input",
+        paragraphs: [
+          "`SparkSession` is the entry point for DataFrame and Spark SQL APIs. `getOrCreate()` reuses a suitable existing session or creates one. For local practice, optionally add `.master(\"local[*]\")` before `getOrCreate()`; production master settings usually come from deployment or `spark-submit`. Databricks notebooks and the `pyspark` shell normally provide `spark` already.",
+        ],
+        code: `from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("Practice").getOrCreate()
+df = spark.read.option("header", True).csv("data.csv")`,
+      },
+      {
+        id: "de-spark-ml-features",
+        title: "Spark ML: DataFrames and features",
+        paragraphs: [
+          "`pyspark.ml` provides DataFrame-based APIs and distributed algorithms such as logistic regression, random forests, and k-means. Features generally occupy one numeric vector column assembled with `VectorAssembler`. Encode categorical inputs with `StringIndexer` and `OneHotEncoder` as appropriate for the algorithm.",
+        ],
+      },
+      {
+        id: "de-spark-ml-pipelines",
+        title: "Spark ML: pipelines and evaluation",
+        paragraphs: [
+          "`Transformer.transform()` returns a DataFrame; `Estimator.fit()` learns a model that is a Transformer. `Pipeline` chains stages; `Pipeline.fit()` returns a `PipelineModel`. Split before fitting learned preprocessing: fit the pipeline on training data, then transform test data. Use task-appropriate metrics and chronological/group splits when random splits would leak information.",
+        ],
+      },
+      {
+        id: "de-databricks-ml-lifecycle",
+        title: "Databricks: ML lifecycle",
+        paragraphs: [
+          "Databricks combines managed Spark/data workflows with MLflow experiment tracking for parameters, metrics, and model artifacts, Unity Catalog model registration/governance, and Model Serving deployment where supported. MLflow tracks work; training algorithms learn the model.",
+        ],
+      },
+      {
+        id: "de-distributed-ml",
+        title: "Distributed vs. single-machine ML",
+        paragraphs: [
+          "Spark distributes data processing and supported ML algorithms. Arbitrary Python or scikit-learn training is not automatically distributed. Prefer simple single-machine training when data and training fit comfortably within its resources; use distributed training when scale justifies the coordination overhead.",
+        ],
+      },
       {
         id: "de-functional-requirements",
         title: "Functional requirements: In, Change, Out",
@@ -211,6 +293,22 @@ is_square = root * root == n`,
           "Ingestion lands replayable raw data; processing validates and transforms it; serving exposes curated outputs. Airflow orchestrates dependencies, retries, and backfills. Spark or AWS Glue can perform processing.",
         ],
         code: "Source -> Raw -> Curated -> Serving",
+      },
+      {
+        id: "de-etl-vs-elt",
+        title: "ETL vs. ELT",
+        paragraphs: [
+          "ETL suits pre-load masking/validation or limited target compute; ELT uses lake/warehouse compute for scalable, evolving analytics and raw-data reprocessing. Choose by transformation location, allowed data boundaries, cost/scale, and freshness. Both support batch, streaming, and hybrids. ELT still needs ingestion validation, access controls, and retention; ETL can keep a separate governed raw landing area.",
+        ],
+        code: `ETL: Extract -> Transform -> Load target
+ELT: Extract -> Load target -> Transform`,
+      },
+      {
+        id: "de-lake-warehouse-lakehouse",
+        title: "Lake vs. warehouse vs. lakehouse",
+        paragraphs: [
+          "Lakes typically use low-cost object storage for varied files, raw retention, ML, and reprocessing; potentially inconsistent data needs cataloging, validation, and governance. Warehouses emphasize curated, modeled data and optimized SQL for BI and consistent metrics, with ingestion/modeling effort and platform costs. Lakehouses add table transactions, governance, and SQL analytics to lake storage. Schema enforcement, compute separation, and costs depend on the platform.",
+        ],
       },
       {
         id: "de-schema-evolution",

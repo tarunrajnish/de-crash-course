@@ -2,6 +2,7 @@ import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
+import { createHash } from "node:crypto";
 import { createServer } from "vite";
 import { parseHTML } from "linkedom";
 
@@ -137,6 +138,63 @@ test("every page ships full HTML, unique metadata, and working internal links wi
       const url = new URL(href, canonical);
       if (url.origin === home.origin) await access(outputFile(url.pathname));
     }
+  }
+});
+
+test("every generated HTML page permits only local resources and its exact early theme script", async () => {
+  const pages = (await readdir("dist", { recursive: true })).filter(file => file.endsWith(".html"));
+  for (const page of pages) {
+    const { document } = parseHTML(await readFile(resolve("dist", page), "utf8"));
+    const policies = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
+    assert.equal(policies.length, 1, page);
+    const policy = policies[0];
+    const directives = new Map(policy.getAttribute("content").split("; ").map(value => {
+      const [name, ...sources] = value.split(" ");
+      return [name, sources];
+    }));
+    const inlineScripts = [...document.querySelectorAll("script:not([src])")];
+    assert.equal(inlineScripts.length, 1, page);
+    const hash = createHash("sha256").update(inlineScripts[0].textContent).digest("base64");
+    assert.deepEqual(directives.get("script-src"), ["'self'", `'sha256-${hash}'`], page);
+    for (const name of ["style-src", "font-src", "img-src"]) {
+      assert.deepEqual(directives.get(name), ["'self'"], `${page}: ${name}`);
+    }
+    for (const name of ["default-src", "style-src-attr", "connect-src", "object-src", "base-uri", "form-action", "frame-src"]) {
+      assert.deepEqual(directives.get(name), ["'none'"], `${page}: ${name}`);
+    }
+    const head = [...document.head.children];
+    assert.ok(head.indexOf(policy) < head.findIndex(element => ["LINK", "SCRIPT"].includes(element.tagName)), page);
+    assert.equal(document.querySelector('link[rel="preconnect"]'), null, page);
+    for (const element of document.querySelectorAll("script[src], link[href]")) {
+      if (element.getAttribute("rel") === "canonical") continue;
+      const url = new URL(element.getAttribute("src") || element.getAttribute("href"), home);
+      assert.equal(url.origin, home.origin, `${page}: external resource ${url}`);
+    }
+  }
+});
+
+test("font files are local, deployment-base aware, and shipped with their licenses", async () => {
+  const { document } = parseHTML(await readFile("dist/index.html", "utf8"));
+  const stylesheets = [...document.querySelectorAll('link[rel="stylesheet"]')];
+  const fonts = new Set();
+  for (const stylesheet of stylesheets) {
+    const css = await readFile(outputFile(new URL(stylesheet.getAttribute("href"), home).pathname), "utf8");
+    for (const match of css.matchAll(/url\(["']?([^"')]+)["']?\)/g)) {
+      if (!match[1].endsWith(".woff2")) continue;
+      const url = new URL(match[1], home);
+      assert.equal(url.origin, home.origin);
+      assert.ok(url.pathname.startsWith(`${home.pathname}fonts/`), url.href);
+      const font = await readFile(outputFile(url.pathname));
+      assert.equal(font.subarray(0, 4).toString(), "wOF2", url.href);
+      fonts.add(url.pathname.split("/").at(-1));
+    }
+  }
+  const expected = (await readdir("public/fonts")).filter(file => file.endsWith(".woff2"));
+  assert.ok(expected.length > 0);
+  assert.deepEqual([...fonts].sort(), expected.sort());
+  for (const family of ["Fraunces", "Inter"]) {
+    const license = await readFile(resolve("dist/fonts", `OFL-${family}.txt`), "utf8");
+    assert.match(license, /SIL Open Font License, Version 1\.1/);
   }
 });
 

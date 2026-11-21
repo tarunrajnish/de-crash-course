@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
+import { createHash } from "node:crypto";
 import { createServer } from "vite";
 import { parseHTML } from "linkedom";
 
@@ -31,6 +32,27 @@ try {
   const urls = new Set();
   for (const route of [...routes, ...aliasRoutes, { name: "not-found" }]) {
     const { document } = parseHTML(template);
+    const inlineScripts = [...document.querySelectorAll("script:not([src])")];
+    if (inlineScripts.length !== 1) {
+      throw new Error("Expected exactly one inline theme script when generating the CSP.");
+    }
+    const hash = createHash("sha256").update(inlineScripts[0].textContent).digest("base64");
+    const policy = document.createElement("meta");
+    policy.setAttribute("http-equiv", "Content-Security-Policy");
+    policy.setAttribute("content", [
+      "default-src 'none'",
+      `script-src 'self' 'sha256-${hash}'`,
+      "style-src 'self'",
+      "style-src-attr 'none'",
+      "font-src 'self'",
+      "img-src 'self'",
+      "connect-src 'none'",
+      "object-src 'none'",
+      "base-uri 'none'",
+      "form-action 'none'",
+      "frame-src 'none'",
+    ].join("; "));
+    document.head.querySelector("meta[charset]").after(policy);
     globalThis.document = document;
     document.querySelector("#app").replaceChildren(renderPage(route));
     applyPageMetadata(route);

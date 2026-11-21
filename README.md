@@ -91,6 +91,69 @@ Search engines only honor `robots.txt` at a hostname's root; a project
 site's copy under `/de-crash-course/` does not control the account-wide
 `tarunrajnish.github.io` host. Submit the sitemap directly for this project.
 
+## Security checks
+
+CI runs `npm audit --audit-level=high`, including development dependencies,
+and fails for high/critical advisories. Review lower-severity findings too.
+The Security workflow runs on pushes/PRs to `master`/`main`, weekly, and
+manually. It checks all fetched Git history, working files, and freshly
+built `dist/` with Gitleaks, and runs CodeQL's JavaScript/TypeScript
+`security-extended` queries. Scanner errors fail the job.
+
+Actions are pinned to commit SHAs; the Gitleaks download is pinned to a
+version and SHA-256 checksum. Tokens default to read-only, checkout does
+not persist credentials, and only CodeQL receives alert-upload permissions.
+Dependabot checks npm dependencies and Actions weekly. Review its updates,
+including security-scanner versions and checksums.
+
+For local checks, install the Gitleaks CLI if needed, then run:
+
+```bash
+npm audit --audit-level=high
+gitleaks git --log-opts="--all" --redact --ignore-gitleaks-allow .
+gitleaks dir --config .gitleaks.toml --redact --ignore-gitleaks-allow .
+npm run build
+gitleaks dir --config .gitleaks.toml --redact --ignore-gitleaks-allow dist
+```
+
+The configuration retains Gitleaks' default rules and excludes installed
+`node_modules/` and Git internals, not generated public files. Redaction
+keeps matched secret values out of scanner logs; still treat reports as
+sensitive. If a real credential is found, revoke/rotate it before removing
+it from files or coordinating any history cleanup. Never hide it with an
+allowlist merely to pass CI.
+
+On 2026-11-20, a scoped manual review found no confirmed exploitable
+vulnerabilities in the examined rendering/routing/storage/build/CI
+boundaries. Local npm audit reported zero advisories, and Gitleaks found
+no secrets across 90 available commits, working files, and generated output.
+These are point-in-time results, not a security guarantee.
+CodeQL is configured but has not run: the remote is still local.
+GitHub execution requires publishing the repository and code scanning
+availability (public repositories, or an eligible private-repository plan).
+Avoid enabling a second default-setup CodeQL scan alongside this workflow.
+
+Before deployment, require the build and security checks in branch rules,
+review CodeQL results, and verify the actual hosting configuration.
+Production pages now include a restrictive meta CSP before resource loads.
+The build hashes the exact early theme script; other inline scripts, inline
+style attributes, dynamic code evaluation, background connections, forms,
+objects, and frames are blocked. Scripts/styles/fonts/images load only from
+the site's origin. This policy is added during pre-rendering, not development,
+so Vite's local HMR remains usable.
+
+Fraunces and Inter are self-hosted WOFF2 files with their existing weights,
+styles, and language subsets. Their SIL Open Font licenses are shipped in
+`public/fonts/`; normal page loading no longer contacts Google Fonts.
+Files came from Google Fonts' Fraunces v38 and Inter v20 distributions.
+Keep the licenses with redistributed fonts.
+
+A meta CSP cannot enforce `frame-ancestors` or supply host-level headers
+such as HSTS. GitHub Pages header limitations, actual production behavior,
+and clickjacking protection on a future header-capable host still need
+a separate launch check. Tests verify CSP hashes/order across generated
+pages and local font URLs at project-site and custom-domain bases.
+
 ## Project layout
 
 - `src/content/types.ts`: shared content types (`Topic`, `Course`, etc.)
@@ -109,6 +172,7 @@ site's copy under `/de-crash-course/` does not control the account-wide
 - `src/pages/*.ts`: home, topic list, and topic detail page renderers
 - `src/style.css`: palette and layout (dark-default, green accent, rose
   used for callouts and active definition terms)
+- `src/fonts.css`, `public/fonts/`: self-hosted Fraunces/Inter and their licenses
 - `public/assets/*.svg`: embedded SMIL animations (narrow vs. wide, join
   strategies, skew and salting), currently disabled via `SHOW_ANIMATIONS` in
   `src/pages/topicDetail.ts`

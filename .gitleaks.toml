@@ -1,0 +1,11 @@
+title = "Project secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Installed dependencies and Git internals; generated dist remains scanned"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.git/''',
+]

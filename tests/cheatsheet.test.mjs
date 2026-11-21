@@ -81,7 +81,7 @@ test("text and category filters combine, announce counts, hide empty groups, and
     assert.ok(visible().length > 0);
     assert.ok(visible().every(tip => tip.id.startsWith("python-")));
     category("");
-    search("CROSS JOIN");
+    search("CTEs CROSS JOIN");
     assert.deepEqual(visible().map(tip => tip.id), ["sql-ctes"]);
     search("");
     assert.equal(visible().length, cheatsheetGroups.flatMap(group => group.tips).length);
