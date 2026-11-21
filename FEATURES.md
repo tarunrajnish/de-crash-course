@@ -9,7 +9,6 @@ does not authorize its implementation or infrastructure changes.
 | --- | --- | --- |
 | P0: content review | Review public content | Finish reviewing material published on the live site |
 | P0: release confidence | Browser regression coverage | Complete coverage for direct navigation, search, theme/progress persistence, reset, and mobile layouts |
-| P0: testing cleanup | Disable temporary donation preview | Set `DONATION_TEST_MODE` to `false` and redeploy after popup testing is complete |
 | P1: discovery | Search Console and sitemap submission | Verify the site in Google Search Console and submit the sitemap |
 | P1: user feedback | Footer suggestion/correction box | Add in-site submission beyond the existing email link; confirm the delivery service before implementation |
 | P1: release recovery | Versioned releases | Tag releases so a previous version can be redeployed for rollback |
@@ -30,10 +29,6 @@ does not authorize its implementation or infrastructure changes.
   protection, clear submission/error states, and a narrowly scoped CSP update.
   Keep mail credentials outside the frontend and repository; confirm successful
   submission before showing a success message.
-
-- **Donation preview cleanup (P0)**: the temporary public test mode shows a
-  labeled support popup on every page load. Disable it after testing to use
-  the implemented 25%, 50%, 75%, and 100% milestones.
 
 - **Deep-linkable anchors (P2)**: link directly to a section or a specific
   self-test question so a link can point

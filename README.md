@@ -49,13 +49,8 @@ The HTML uses a root-relative asset URL so Vite adds the deployment base
 exactly once in development and production. No logo requests go to an
 external provider.
 
-**Temporary public test mode is enabled:** `DONATION_TEST_MODE = true` in
-`src/lib/donations.ts` shows the popup on every page load, regardless of
-progress or prior dismissal. Closing it hides it for that page. Test previews
-are clearly labeled and do not write donation milestone history.
-Set the flag to `false` and redeploy after testing.
-
-Normal mode uses overall topics marked as read, at 25%, 50%, 75%, and 100%.
+The every-page-load preview is disabled (`DONATION_TEST_MODE = false`).
+Reminders use overall topics marked as read, at 25%, 50%, 75%, and 100%.
 Opening a lesson or marking a concept completed can trigger a reminder.
 If several milestones are crossed together, only the highest new milestone
 is shown and lower reached milestones are treated as covered. At most one

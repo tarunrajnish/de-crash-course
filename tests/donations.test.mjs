@@ -81,7 +81,7 @@ test("normal reminders use exact overall thresholds at 25, 50, 75, and 100 perce
     for (const count of [minimum - 1, minimum]) {
       const dom = installDOM({ count, shown: previous });
       try {
-        initDonationPrompts(false);
+        initDonationPrompts();
         assert.equal(dom.popup().hidden, count < minimum, `${count}/${markers.length} for ${milestone}%`);
         if (count === minimum) {
           assert.equal(dom.document.getElementById("donation-popup-title").textContent, `You've reached ${milestone}%`);
@@ -96,13 +96,28 @@ test("normal reminders use exact overall thresholds at 25, 50, 75, and 100 perce
   }
 });
 
-test("the default test preview returns on each reload without changing milestone history or progress", () => {
+test("default browsing does not show reminders at zero progress on reload", () => {
+  const values = new Map();
+  for (let reload = 0; reload < 2; reload++) {
+    const dom = installDOM({ count: 0, values });
+    try {
+      initDonationPrompts();
+      assert.equal(dom.popup().hidden, true);
+      assert.equal(dom.popup().querySelector(".donation-preview-note"), null);
+      assert.equal(values.has(milestoneKey), false);
+    } finally {
+      dom.restore();
+    }
+  }
+});
+
+test("explicit test previews return on reload without changing milestone history or progress", () => {
   const values = new Map([[milestoneKey, JSON.stringify([25, 50, 75, 100])]]);
   for (let reload = 0; reload < 2; reload++) {
     const dom = installDOM({ count: 0, values });
     try {
       const before = new Map(values);
-      initDonationPrompts();
+      initDonationPrompts(true);
       assert.equal(dom.popup().hidden, false);
       assert.match(dom.popup().textContent, /Test preview: shown on every reload/);
       assert.equal(dom.document.getElementById("donation-popup-title").textContent, "Found this useful?");
@@ -122,7 +137,7 @@ test("the default test preview returns on each reload without changing milestone
       close.click();
       assert.equal(dom.popup().hidden, true);
       dom.flushObservers();
-      initDonationPrompts();
+      initDonationPrompts(true);
       assert.equal(dom.popup().hidden, true);
       assert.equal(dom.document.querySelectorAll("#donation-popup").length, 1);
       assert.deepEqual(values, before);

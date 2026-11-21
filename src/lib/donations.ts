@@ -3,8 +3,8 @@ import { el } from "./dom";
 import { icon } from "./icons";
 import { overallProgress, PROGRESS_CHANGED_EVENT } from "./progress";
 
-// Temporary public preview requested for testing. Set false to use milestones.
-export const DONATION_TEST_MODE = true;
+// Enable only when explicitly testing the preview.
+export const DONATION_TEST_MODE = false;
 const MILESTONES: readonly number[] = [25, 50, 75, 100];
 const STORAGE_KEY = "de-crash-course-donation-milestones";
 

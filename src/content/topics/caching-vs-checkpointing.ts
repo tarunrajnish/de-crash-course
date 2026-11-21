@@ -16,7 +16,7 @@ export const cachingVsCheckpointing: Topic = {
     {
       heading: "Why it costs what it costs",
       paragraphs: [
-        "Caching an unused or single-use dataframe is pure overhead: it spends memory and the cost of writing to the cache for a benefit that never materializes, and if the cache gets evicted under memory pressure, Spark falls back to recomputation anyway, meaning you paid to cache something that was recomputed regardless.",
+        "Caching is lazy: cache() and persist() register a storage request; partitions are populated when an action computes them. If a materialized dataframe is used only once, storing it usually adds overhead without any later reuse savings.",
         "A long lineage, as commonly happens in iterative algorithms, makes recomputation on failure expensive: an executor loss late in a chain of 50 shuffles can force Spark to re-run most of that chain. checkpoint exists specifically to bound how far back a recompute can go.",
       ],
     },
@@ -43,7 +43,7 @@ export const cachingVsCheckpointing: Topic = {
         "Cache only when a dataframe is read more than once downstream and the cost of recomputing it exceeds the cost of holding it in memory. A dataframe used exactly once gains nothing from caching; the cache write cost is wasted.",
         "Evictions make this worse than not caching at all: Spark spends time managing a cache entry that gets evicted before its second read, then recomputes anyway on that second read, paying both the caching overhead and the full recompute cost.",
       ],
-      warning: "A cache hint on a dataframe used once is a net loss, not a neutral no-op.",
+      warning: "Caching a dataframe materialized for only one use usually adds storage overhead without reuse savings.",
     },
     {
       heading: "Streaming checkpoints are a different thing",
