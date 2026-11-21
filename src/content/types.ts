@@ -10,6 +10,11 @@ export interface ContentSection {
   heading: string;
   paragraphs: string[];
   table?: ComparisonTable;
+  diagram?: {
+    src: string;
+    alt: string;
+    caption?: string;
+  };
   warning?: string;
 }
 

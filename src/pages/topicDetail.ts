@@ -43,6 +43,22 @@ function renderSection(section: ContentSection, renderText: RenderText): HTMLEle
     wrap.appendChild(para);
   }
   if (section.table) wrap.appendChild(renderTable(section.table, renderText));
+  if (section.diagram) {
+    const figure = el("figure", { className: "lesson-diagram" });
+    figure.appendChild(el("img", {
+      className: "lesson-diagram-image",
+      attrs: {
+        src: `${import.meta.env.BASE_URL}${section.diagram.src.replace(/^\/+/, "")}`,
+        alt: section.diagram.alt,
+      },
+    }));
+    if (section.diagram.caption) {
+      const caption = el("figcaption", { className: "lesson-diagram-caption" });
+      renderText(caption, section.diagram.caption);
+      figure.appendChild(caption);
+    }
+    wrap.appendChild(figure);
+  }
   if (section.warning) {
     const warn = el("div", { className: "callout callout-warning" });
     warn.appendChild(el("span", { className: "callout-label", text: "Cost / gotcha" }));

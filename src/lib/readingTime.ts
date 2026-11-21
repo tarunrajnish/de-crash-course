@@ -15,6 +15,7 @@ export function estimatedReadingMinutes(topic: Topic): number {
     ...topic.sections.flatMap(section => [
       section.heading,
       ...section.paragraphs,
+      section.diagram?.caption ?? "",
       section.warning ?? "",
       ...tableText(section.table),
     ]),

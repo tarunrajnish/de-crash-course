@@ -27,6 +27,20 @@ export const jobStageTask: Topic = {
         "If a stage has 200 partitions, it has 200 tasks, and those tasks run in parallel across however many executor cores are available.",
       ],
     },
+    {
+      heading: "Visual example: total sales per customer",
+      paragraphs: [
+        "Filter positive sales with `sales.filter(\"amount > 0\")`, then chain `.groupBy(\"customer\")`, `.sum(\"amount\")`, and `.collect()`. The filter and aggregation build a plan; `collect()` requests the result. Assume three input partitions, three shuffle partitions, and a simple execution without adaptive changes, extra planning jobs, or retries.",
+        "Job 0 contains two stages. Stage 0 runs three tasks, one for each input partition, to read, filter, and produce partial customer totals. The shuffle redistributes those totals by customer, so all partial totals for a customer reach the same downstream partition.",
+        "Stage 1 runs three more tasks, one for each shuffle partition, to fetch the shuffled data and finish the totals. Six tasks are scheduled across the two stages; the downstream stage waits for the required shuffle output, and available executor cores limit how many tasks run at once.",
+        "The task count can change between stages: three input partitions and two shuffle partitions would produce three tasks followed by two tasks, for five in total. Retries can add task attempts; Spark UI counts can differ when adaptive execution or extra jobs are involved.",
+      ],
+      diagram: {
+        src: "assets/job-stage-task.svg",
+        alt: "One collect action creates Job 0. Inside the job, Stage 0 has tasks 0, 1, and 2 for input partitions P0, P1, and P2. A shuffle routes matching customer keys into three downstream partitions. Stage 1 has tasks 3, 4, and 5 for those shuffle partitions. The example has two stages and six tasks in total.",
+        caption: "One job contains two stages separated by a shuffle. Each stage has three partitions and three tasks in this example.",
+      },
+    },
   ],
   selfTest: [
     {
@@ -40,6 +54,10 @@ export const jobStageTask: Topic = {
     {
       question: "If a stage has 400 partitions, how many tasks does it have?",
       answer: "400. One task per partition in that stage.",
+    },
+    {
+      question: "A two-stage job has three input partitions and two shuffle partitions. Without retries, how many tasks run?",
+      answer: "Five: three tasks in the first stage and two in the second. Count the partitions separately for each stage; the stages do not have to have the same task count.",
     },
   ],
 };

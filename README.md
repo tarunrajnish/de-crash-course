@@ -229,6 +229,12 @@ short. Show actual inputs and outcomes; label hypothetical performance
 and cost figures as illustrative. Examples appear before the self-test
 and use the lesson's existing glossary selections.
 
+For a static visual, a content section can include `diagram` with a local
+`src`, descriptive `alt`, and optional `caption`. Put SVG assets in
+`public/assets/`; diagrams render independently of the disabled animations.
+Captions contribute to reading-time estimates. Keep the explanation in
+lesson text as well so the example remains accessible without the image.
+
 ## Adding a quick tip
 
 Store concise hints in the appropriate group in `src/content/cheatsheet.ts`.

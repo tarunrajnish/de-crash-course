@@ -111,6 +111,16 @@ test("reading estimates round at 200-word boundaries and count all written learn
     topic.selfTest[0].answer = "";
     assert.equal(estimatedReadingMinutes(topic), 1, "200 written words after removing one answer word");
   }
+  const illustrated = {
+    ...emptyTopic(),
+    sections: [{
+      heading: "", paragraphs: [words(200)],
+      diagram: { src: "assets/example.svg", alt: words(1000), caption: "word" },
+    }],
+  };
+  assert.equal(estimatedReadingMinutes(illustrated), 2, "Visible captions count toward reading time");
+  delete illustrated.sections[0].diagram.caption;
+  assert.equal(estimatedReadingMinutes(illustrated), 1, "Alternative image text is not counted again");
 });
 
 test("remaining time subtracts each opened topic once, preserves totals, and resets globally and per concept", () => {

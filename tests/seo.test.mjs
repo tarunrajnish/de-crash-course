@@ -132,13 +132,30 @@ test("every page ships full HTML, unique metadata, and working internal links wi
       assert.equal(document.querySelectorAll(".content-wrap .content-section").length, topic.sections.length);
       assert.equal(document.querySelectorAll(".self-test-item").length, topic.selfTest.length);
     }
-    for (const element of document.querySelectorAll("a[href], script[src], link[rel='stylesheet'], link[rel='icon']")) {
+    for (const element of document.querySelectorAll("a[href], script[src], img[src], link[rel='stylesheet'], link[rel='icon']")) {
       const href = element.getAttribute("href") || element.getAttribute("src");
       assert.ok(!href.startsWith("#/"), `Legacy-only link in ${pathname}: ${href}`);
       const url = new URL(href, canonical);
       if (url.origin === home.origin) await access(outputFile(url.pathname));
     }
   }
+});
+
+test("static lesson diagrams ship accessible images and captions without enabling animations", async () => {
+  const route = { name: "topic-detail", courseId: "spark-delta-basics", topicId: "job-stage-task" };
+  const topic = courses.find(course => course.id === route.courseId).topics.find(topic => topic.id === route.topicId);
+  const diagram = topic.sections.find(section => section.diagram).diagram;
+  const { document } = parseHTML(await readFile(outputFile(routeToPath(route)), "utf8"));
+  const figure = document.querySelector(".content-section .lesson-diagram");
+  assert.ok(figure, "The visual example must be present in the pre-rendered lesson");
+  const image = figure.querySelector("img");
+  const expectedUrl = new URL(diagram.src, home);
+  assert.equal(image.getAttribute("src"), expectedUrl.pathname);
+  assert.equal(image.getAttribute("alt"), diagram.alt);
+  assert.ok(image.getAttribute("alt").length > 0);
+  assert.equal(figure.querySelector("figcaption").textContent, diagram.caption);
+  await access(outputFile(expectedUrl.pathname));
+  assert.equal(document.querySelector(".animation-figure"), null);
 });
 
 test("every generated HTML page permits only local resources and its exact early theme script", async () => {
@@ -165,7 +182,7 @@ test("every generated HTML page permits only local resources and its exact early
     const head = [...document.head.children];
     assert.ok(head.indexOf(policy) < head.findIndex(element => ["LINK", "SCRIPT"].includes(element.tagName)), page);
     assert.equal(document.querySelector('link[rel="preconnect"]'), null, page);
-    for (const element of document.querySelectorAll("script[src], link[href]")) {
+    for (const element of document.querySelectorAll("script[src], img[src], link[href]")) {
       if (element.getAttribute("rel") === "canonical") continue;
       const url = new URL(element.getAttribute("src") || element.getAttribute("href"), home);
       assert.equal(url.origin, home.origin, `${page}: external resource ${url}`);
