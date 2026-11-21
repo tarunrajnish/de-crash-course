@@ -124,7 +124,9 @@ built `dist/` with Gitleaks, and runs CodeQL's JavaScript/TypeScript
 `security-extended` queries. Scanner errors fail the job.
 
 Actions are pinned to commit SHAs; the Gitleaks download is pinned to a
-version and SHA-256 checksum. Tokens default to read-only, checkout does
+version and SHA-256 checksum. CI builds with Node.js 24, and JavaScript
+Actions use Node.js 24 runtimes. Pages uploads include hidden files to
+preserve `.nojekyll`. Tokens default to read-only, checkout does
 not persist credentials, and only CodeQL receives alert-upload permissions.
 Only the gated deployment job receives Pages/OIDC write permissions.
 Dependabot checks npm dependencies and Actions weekly. Review its updates,
