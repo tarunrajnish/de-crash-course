@@ -39,6 +39,15 @@ export function markVisited(courseId: string, topicId: string): void {
   writeVisited(visited);
 }
 
+export function markCourseCompleted(course: Course): void {
+  if (import.meta.env.SSR) return;
+  const visited = readVisited();
+  for (const topic of course.topics) {
+    visited.add(key(canonicalCourseId(course.id), topic.id));
+  }
+  writeVisited(visited);
+}
+
 export function isVisited(courseId: string, topicId: string): boolean {
   return hasVisited(readVisited(), courseId, topicId);
 }

@@ -16,7 +16,12 @@ and total reading time. Estimates use 200 words per minute, rounded up per
 topic, including written lesson content, tables, worked examples, and
 self-tests/answers. Video duration and practice time are excluded.
 Remaining time drops when topics are opened, matching the existing read
-markers, and returns to the total when progress is reset. Estimates and
+markers. Each concept page also has a **Mark as completed** button that marks
+all of its topics as read in one action, updates the count and remaining time,
+and preserves progress in other concepts. The button becomes **Completed**
+once every topic is marked as read. This control requires JavaScript; storage
+failures show an error without claiming completion.
+Remaining time returns to the total when progress is reset. Estimates and
 progress stay device-local; they do not measure time spent reading.
 
 Each lesson selects around five core concepts, with a maximum of ten.

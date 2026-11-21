@@ -12,14 +12,16 @@ const server = await createServer({
     name: "test-browser-progress",
     enforce: "pre",
     transform(code, id) {
-      if (id.endsWith("/src/lib/progress.ts")) return code.replaceAll("import.meta.env.SSR", "false");
+      if (id.endsWith("/src/lib/progress.ts") || id.endsWith("/src/pages/topicList.ts")) {
+        return code.replaceAll("import.meta.env.SSR", "false");
+      }
     },
   }],
 });
 after(() => server.close());
 
 const { courses } = await server.ssrLoadModule("/src/content/index.ts");
-const { courseProgress, overallProgress, isVisited, markVisited, resetProgress } =
+const { courseProgress, overallProgress, isVisited, markVisited, markCourseCompleted, resetProgress } =
   await server.ssrLoadModule("/src/lib/progress.ts");
 const { estimatedReadingMinutes, readingTimeLabel } = await server.ssrLoadModule("/src/lib/readingTime.ts");
 const { renderHome } = await server.ssrLoadModule("/src/pages/home.ts");
@@ -159,6 +161,132 @@ test("remaining time subtracts each opened topic once, preserves totals, and res
   } finally {
     if (previous) Object.defineProperty(globalThis, "localStorage", previous);
     else delete globalThis.localStorage;
+  }
+});
+
+test("completing a concept saves all its topics once and preserves aliases, other concepts, and browser preferences", () => {
+  const course = courses.find(course => course.id === "transformations-joins-skew");
+  const other = courses.find(candidate => candidate.id !== course.id);
+  const original = [
+    "pushdown-and-caching/predicate-partition-pruning",
+    `${other.id}/${other.topics[0].id}`,
+    "older-concept/older-topic",
+  ];
+  const values = new Map([
+    ["de-crash-course-progress", JSON.stringify(original)],
+    ["de-crash-course-theme", "light"],
+    ["de-crash-course-analytics-consent", "declined"],
+  ]);
+  let writes = 0;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: key => values.get(key) ?? null,
+      setItem: (key, value) => { writes++; values.set(key, value); },
+      removeItem: key => { values.delete(key); },
+    },
+  });
+  try {
+    markCourseCompleted(course);
+    assert.equal(writes, 1, "Bulk completion should use one storage write");
+    const stored = JSON.parse(values.get("de-crash-course-progress"));
+    for (const marker of original) assert.ok(stored.includes(marker));
+    for (const topic of course.topics) {
+      assert.ok(stored.includes(`${course.id}/${topic.id}`));
+      assert.equal(isVisited(course.id, topic.id), true);
+    }
+    assert.equal(courseProgress(course).visited, course.topics.length);
+    assert.equal(courseProgress(course).remainingMinutes, 0);
+    assert.equal(courseProgress(other).visited, 1);
+    assert.equal(overallProgress(courses).visited, course.topics.length + 1);
+    assert.equal(values.get("de-crash-course-theme"), "light");
+    assert.equal(values.get("de-crash-course-analytics-consent"), "declined");
+    markCourseCompleted(course);
+    assert.deepEqual(JSON.parse(values.get("de-crash-course-progress")), stored, "Repeated completion must not duplicate markers");
+    resetProgress();
+    assert.equal(courseProgress(course).visited, 0);
+    assert.equal(courseProgress(course).remainingMinutes, courseProgress(course).totalMinutes);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, "localStorage", previous);
+    else delete globalThis.localStorage;
+  }
+});
+
+test("concept completion updates the page immediately, persists on return, and reports failed saves before retrying", () => {
+  const values = new Map();
+  const previousStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+  const previousError = console.error;
+  const errors = [];
+  let blocked = false;
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: key => values.get(key) ?? null,
+      setItem: (key, value) => {
+        if (blocked) throw new Error("Site storage is blocked");
+        values.set(key, value);
+      },
+      removeItem: key => { values.delete(key); },
+    },
+  });
+  Object.defineProperty(globalThis, "document", {
+    configurable: true,
+    value: parseHTML("<html><body></body></html>").document,
+  });
+  console.error = (...args) => errors.push(args);
+  try {
+    const course = courses[0];
+    markVisited(course.id, course.topics[0].id);
+    const page = renderTopicList(course.id);
+    const button = page.querySelector(".progress-complete");
+    const meter = page.querySelector("progress");
+    const estimate = page.querySelector(".reading-time-estimate");
+    const initialTime = estimate.textContent;
+    assert.equal(button.hidden, false);
+    assert.equal(button.disabled, false);
+    assert.equal(button.textContent, "Mark as completed");
+    assert.equal(button.closest("a"), null, "Completion must not be nested in a navigation link");
+
+    blocked = true;
+    button.click();
+    assert.equal(errors.length, 1);
+    assert.equal(page.querySelector(".progress-save-error").hidden, false);
+    assert.equal(button.disabled, false);
+    assert.equal(button.textContent, "Mark as completed");
+    assert.equal(meter.getAttribute("value"), "1");
+    assert.equal(estimate.textContent, initialTime);
+    assert.equal(courseProgress(course).visited, 1);
+    assert.equal(page.querySelectorAll(".topic-card-visited").length, 1);
+
+    blocked = false;
+    button.click();
+    assert.equal(page.querySelector(".progress-save-error").hidden, true);
+    assert.equal(button.textContent, "Completed");
+    assert.equal(button.disabled, true);
+    assert.equal(meter.getAttribute("value"), String(course.topics.length));
+    assert.equal(page.querySelector(".progress-meter-label").textContent, `${course.topics.length} / ${course.topics.length} read`);
+    assert.equal(estimate.textContent, readingTimeLabel(0, courseProgress(course).totalMinutes));
+    assert.equal(page.querySelectorAll(".topic-card-visited").length, course.topics.length);
+
+    const returned = renderTopicList(course.id);
+    assert.equal(returned.querySelector(".progress-complete").disabled, true);
+    assert.equal(returned.querySelector("progress").getAttribute("value"), String(course.topics.length));
+    const home = renderHome();
+    assert.equal(home.querySelector(".progress-complete"), null, "Completion controls belong only on concept pages");
+    assert.equal(home.querySelector(".progress-meter--overall progress").getAttribute("value"), String(course.topics.length));
+    assert.equal(home.querySelector(".tile progress").getAttribute("value"), String(course.topics.length));
+    resetProgress();
+    const reset = renderTopicList(course.id);
+    assert.equal(reset.querySelector(".progress-complete").disabled, false);
+    assert.equal(reset.querySelector(".progress-complete").textContent, "Mark as completed");
+  } finally {
+    console.error = previousError;
+    if (previousStorage) Object.defineProperty(globalThis, "localStorage", previousStorage);
+    else delete globalThis.localStorage;
+    if (previousDocument) Object.defineProperty(globalThis, "document", previousDocument);
+    else delete globalThis.document;
   }
 });
 
