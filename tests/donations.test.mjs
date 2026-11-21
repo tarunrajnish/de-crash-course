@@ -29,7 +29,11 @@ const markers = courses.flatMap(course => course.topics.map(topic => `${course.i
 function installDOM({ count, shown, values = new Map(), consentOpen = false, searchOpen = false, failRead = false, failWrite = false } = {}) {
   const { window, document } = parseHTML(`<html><body>
     <button id="reading-control">Continue reading</button>
-    <footer><a id="venmo-support" href="https://venmo.com/tarunrajnish">Support via Venmo</a>
+    <footer><a id="venmo-support" href="https://venmo.com/tarunrajnish">
+    <span class="venmo-logo" aria-hidden="true">
+    <img class="venmo-logo-blue" src="/de-crash-course/assets/venmo-blue.png" alt="">
+    <img class="venmo-logo-white" src="/de-crash-course/assets/venmo-white.png" alt="">
+    </span><span>Support via Venmo</span></a>
     <p id="donation-status" hidden></p></footer>
     <section id="analytics-consent" hidden></section>
   </body></html>`);
@@ -107,6 +111,11 @@ test("the default test preview returns on each reload without changing milestone
       assert.equal(link.href, dom.document.getElementById("venmo-support").href);
       assert.equal(link.getAttribute("target"), "_blank");
       assert.equal(link.getAttribute("rel"), "noopener noreferrer");
+      assert.equal(link.querySelector(".venmo-logo").getAttribute("aria-hidden"), "true");
+      assert.deepEqual(
+        [...link.querySelectorAll(".venmo-logo img")].map(image => image.getAttribute("src")),
+        [...dom.document.querySelectorAll("#venmo-support .venmo-logo img")].map(image => image.getAttribute("src")),
+      );
       const close = dom.popup().querySelector("button");
       assert.equal(close.getAttribute("aria-label"), "Dismiss donation reminder");
       assert.equal(close.textContent, "");

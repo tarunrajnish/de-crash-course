@@ -282,8 +282,31 @@ button.site-footer-link {
 
 .site-footer-support {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
+  gap: 10px;
   min-height: 44px;
+  padding: 10px;
+}
+
+.venmo-logo {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.venmo-logo img {
+  display: block;
+  width: 106px;
+  height: auto;
+}
+
+.venmo-logo .venmo-logo-white,
+[data-theme="dark"] .venmo-logo .venmo-logo-blue {
+  display: none;
+}
+
+[data-theme="dark"] .venmo-logo .venmo-logo-white {
+  display: block;
 }
 
 .site-footer-status {
@@ -406,10 +429,12 @@ button.site-footer-link {
 
 .donation-support-link {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   min-height: 44px;
-  padding: 8px 12px;
+  padding: 12px;
   border: 1px solid var(--accent-border);
   border-radius: 8px;
   background: var(--accent-bg);

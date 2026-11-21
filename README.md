@@ -41,6 +41,10 @@ The footer links directly to `https://venmo.com/tarunrajnish`. A small,
 dismissible popup offers the same optional support link without payment forms,
 suggested amounts, or automatic focus changes. It waits while search or
 analytics preferences are open.
+Both links show Venmo's official wordmark using unmodified, self-hosted PNGs
+from the [Venmo brand kit](https://venmo.com/about/brand). The white logo is
+used in dark mode and the blue logo in light mode, with space around the mark.
+No logo requests are sent to Venmo or its asset provider.
 
 **Temporary public test mode is enabled:** `DONATION_TEST_MODE = true` in
 `src/lib/donations.ts` shows the popup on every page load, regardless of
@@ -303,6 +307,10 @@ For a static visual, a content section can include `diagram` with a local
 `public/assets/`; diagrams render independently of the disabled animations.
 Captions contribute to reading-time estimates. Keep the explanation in
 lesson text as well so the example remains accessible without the image.
+
+Prefer a topic-specific video for each lesson. Avoid recommending the same
+YouTube video across lessons, including links with different timestamps.
+The content tests check video IDs for duplicates.
 
 ## Adding a quick tip
 

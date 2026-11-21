@@ -78,7 +78,7 @@ export const skewAndSalting: Topic = {
     },
   ],
   videos: [
-    { title: "Spark joins explained: broadcast vs shuffle join, data skew", url: "https://www.youtube.com/watch?v=Et-Ia27N2JA" },
+    { title: "Fix Skewness and Spillage with Salting in Spark | Salting Technique | How to identify Skewness", url: "https://www.youtube.com/watch?v=2oaTQl1YzCw" },
   ],
   example: {
     title: "Split a hot key, then combine its partial sums",

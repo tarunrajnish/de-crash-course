@@ -64,7 +64,7 @@ export const narrowVsWide: Topic = {
     },
   ],
   videos: [
-    { title: "Spark joins explained: broadcast vs shuffle join, data skew", url: "https://www.youtube.com/watch?v=Et-Ia27N2JA" },
+    { title: "Narrow vs Wide Transformations in Spark (and Why Shuffles Are Slow) | PySpark Performance Tuning #4", url: "https://www.youtube.com/watch?v=AI_CObcfcms" },
   ],
   example: {
     title: "Watch records cross the shuffle boundary",

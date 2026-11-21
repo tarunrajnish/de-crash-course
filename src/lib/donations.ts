@@ -24,6 +24,8 @@ export function initDonationPrompts(testMode = DONATION_TEST_MODE): void {
   const footerLink = document.querySelector<HTMLAnchorElement>("#venmo-support");
   const statusControl = document.getElementById("donation-status");
   if (!footerLink || !statusControl) throw new Error("Donation footer controls are missing.");
+  const footerLogo = footerLink.querySelector(".venmo-logo");
+  if (!footerLogo) throw new Error("Venmo footer logo is missing.");
   const status = statusControl;
 
   const popup = el("section", {
@@ -43,16 +45,17 @@ export function initDonationPrompts(testMode = DONATION_TEST_MODE): void {
   popup.appendChild(el("p", {
     text: "If these notes have helped with your prep, you can support the site via Venmo. It's entirely optional.",
   }));
-  popup.appendChild(el("a", {
+  const support = el("a", {
     className: "donation-support-link",
-    text: "Support via Venmo",
     attrs: {
       href: footerLink.href,
       target: "_blank",
       rel: "noopener noreferrer",
       "aria-label": "Support via Venmo (opens a new tab)",
     },
-  }));
+  });
+  support.append(footerLogo.cloneNode(true), el("span", { text: "Support via Venmo" }));
+  popup.appendChild(support);
   if (testMode) {
     popup.appendChild(el("small", {
       className: "donation-preview-note",

@@ -197,9 +197,34 @@ test("every static route includes a safe footer support link without embedding p
     assert.equal(link.getAttribute("href"), "https://venmo.com/tarunrajnish", page);
     assert.equal(link.getAttribute("target"), "_blank", page);
     assert.equal(link.getAttribute("rel"), "noopener noreferrer", page);
+    assert.equal(link.querySelector(".venmo-logo").getAttribute("aria-hidden"), "true", page);
+    const logos = [...link.querySelectorAll(".venmo-logo img")];
+    assert.equal(logos.length, 2, page);
+    for (const logo of logos) {
+      assert.equal(logo.getAttribute("alt"), "", page);
+      const url = new URL(logo.getAttribute("src"), home);
+      assert.equal(url.origin, home.origin, page);
+      await access(outputFile(url.pathname));
+    }
     assert.equal(document.querySelector('script[src*="venmo"], iframe[src*="venmo"]'), null, page);
     const feedback = document.querySelector('footer a[href="mailto:tarun.rajnish@gmail.com"]');
     assert.equal(feedback?.textContent, "tarun.rajnish@gmail.com", page);
+  }
+});
+
+test("lesson video recommendations do not repeat videos across topics or timestamps", () => {
+  const seen = new Map();
+  for (const course of courses) {
+    for (const topic of course.topics) {
+      for (const video of topic.videos ?? []) {
+        const url = new URL(video.url);
+        const id = url.hostname === "youtu.be" ? url.pathname.slice(1)
+          : url.hostname === "www.youtube.com" || url.hostname === "youtube.com" ? url.searchParams.get("v") : null;
+        const key = id ? `youtube:${id}` : video.url;
+        assert.equal(seen.has(key), false, `${topic.id} repeats a video used in ${seen.get(key)}`);
+        seen.set(key, topic.id);
+      }
+    }
   }
 });
 
