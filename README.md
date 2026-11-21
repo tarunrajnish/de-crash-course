@@ -76,10 +76,24 @@ npm test
 npm run preview
 ```
 
-Publish the entire `dist/` directory, using GitHub Pages' GitHub Actions
-publishing source. The build includes canonical URLs, Open Graph and Twitter
-metadata, `sitemap.xml`, `robots.txt`, `.nojekyll`, and a noindexed `404.html`.
-It does not deploy the site or configure Pages automatically.
+The build includes canonical URLs, Open Graph and Twitter metadata,
+`sitemap.xml`, `robots.txt`, `.nojekyll`, and a noindexed `404.html`.
+Local builds do not deploy.
+
+The CI workflow uploads the complete `dist/` artifact and deploys it on
+pushes to `master` or manual CI runs on `master`. Deployment waits for
+the build, tests, dependency audit, Gitleaks, and CodeQL on the same commit.
+PRs and other branches run checks without uploading a Pages artifact or
+deploying. Security is a reusable workflow, so CI does not duplicate scans
+in a separate push-triggered run.
+
+Before pushing the deployment workflow, select repository
+**Settings > Pages > Source: GitHub Actions**. Pages enablement remains
+manual. The deployment job uses the `github-pages` environment and serializes
+publishing without cancelling an active deployment. Only that job gets
+`pages: write` and `id-token: write`; no personal token is stored in the
+workflow. A manual rerun of **Actions > CI > Run workflow** on `master`
+rechecks the commit before deploying.
 
 To switch domains, rebuild with the final public URL, including any path
 prefix. For a custom domain serving the site at its root:
@@ -103,14 +117,16 @@ site's copy under `/de-crash-course/` does not control the account-wide
 
 CI runs `npm audit --audit-level=high`, including development dependencies,
 and fails for high/critical advisories. Review lower-severity findings too.
-The Security workflow runs on pushes/PRs to `master`/`main`, weekly, and
-manually. It checks all fetched Git history, working files, and freshly
+CI calls the Security workflow on pushes/PRs to `master`/`main` and manual
+CI runs. Security also runs weekly and can run manually without deploying.
+It checks all fetched Git history, working files, and freshly
 built `dist/` with Gitleaks, and runs CodeQL's JavaScript/TypeScript
 `security-extended` queries. Scanner errors fail the job.
 
 Actions are pinned to commit SHAs; the Gitleaks download is pinned to a
 version and SHA-256 checksum. Tokens default to read-only, checkout does
 not persist credentials, and only CodeQL receives alert-upload permissions.
+Only the gated deployment job receives Pages/OIDC write permissions.
 Dependabot checks npm dependencies and Actions weekly. Review its updates,
 including security-scanner versions and checksums.
 
@@ -136,9 +152,11 @@ vulnerabilities in the examined rendering/routing/storage/build/CI
 boundaries. Local npm audit reported zero advisories, and Gitleaks found
 no secrets across 90 available commits, working files, and generated output.
 These are point-in-time results, not a security guarantee.
-CodeQL is configured but has not run: the remote is still local.
-GitHub execution requires publishing the repository and code scanning
-availability (public repositories, or an eligible private-repository plan).
+The repository is now published at
+`https://github.com/tarunrajnish/de-crash-course`. CI, Gitleaks, and CodeQL
+completed successfully on GitHub on 2026-11-20; the repository owner reported
+no CodeQL alerts. These results apply to the scanned commit and do not
+replace review of future alerts or the final hosting checks.
 Avoid enabling a second default-setup CodeQL scan alongside this workflow.
 
 Before deployment, require the build and security checks in branch rules,

@@ -8,9 +8,9 @@ require user authorization.
 
 | Priority | Work | Completion criterion |
 | --- | --- | --- |
-| P0: before publication | Complete security launch gates | Local scoped review, dependency audit, secret scans, CSP, and self-hosted fonts completed; run configured CodeQL on GitHub and review public content before publication |
+| P0: before publication | Complete security launch gates | Local scoped review, dependency audit, secret scans, CSP, and self-hosted fonts completed; GitHub CodeQL passed and owner reported no alerts; review public content and final hosting behavior |
 | P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
-| P1: publish | Personal GitHub repository and Pages deployment | Commit approved changes, publish to the intended personal repository, and deploy the entire generated `dist/` through a Pages workflow; existing CI does not deploy |
+| P1: publish | Activate Pages deployment | Personal GitHub repository published; gated deployment workflow implemented; enable Pages' GitHub Actions source and push approved workflow changes to deploy the complete `dist/` |
 | P1: verify launch | Live-site checks and Search Console | Verify HTTPS, deep links, assets, legacy redirects, an actual HTTP 404, and canonical URLs; submit the sitemap and inspect representative pages |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
@@ -19,8 +19,8 @@ require user authorization.
 
 A scoped manual review and local dependency/secret scans were completed
 on 2026-11-20. No confirmed exploitable vulnerability, dependency advisory,
-or secret was found in those checks. CodeQL is configured but has not run
-on GitHub. Hosting checks and a public-content review
+or secret was found in those checks. GitHub CI and Security checks passed;
+the owner reported no CodeQL alerts. Hosting checks and a public-content review
 remain launch gates; the checks are not a comprehensive security guarantee.
 
 ## User experience
@@ -90,7 +90,7 @@ remain launch gates; the checks are not a comprehensive security guarantee.
 - **Pre-publication security review (P0)**: scoped manual review completed
   for rendering, routing, browser storage, external resources, static-build
   logic, and CI. No confirmed exploitable vulnerability was identified.
-  Complete CodeQL execution and remaining hosting/public-content checks
+  GitHub CodeQL passed and the owner reported no alerts. Complete hosting/public-content checks
   before launch; static hosting still has client-side and supply-chain risks.
 - **Content Security Policy (implemented)**: generated pages include a
   restrictive meta policy before resources load, with an exact hash for the
@@ -105,11 +105,12 @@ remain launch gates; the checks are not a comprehensive security guarantee.
   zero advisories on 2026-11-20. CI and weekly Security runs audit all
   dependencies, failing on high/critical findings. Dependabot checks npm
   and Actions weekly. Review lower-severity findings and keep tooling patched.
-- **Secret and code scans (configured)**: checksum-pinned Gitleaks scans
+- **Secret and code scans (implemented)**: checksum-pinned Gitleaks scans
   fetched Git history, working files, and fresh production output. Local
   scans found no secrets across 90 available commits and current files.
-  CodeQL's JavaScript/TypeScript security-extended workflow is pending its
-  first GitHub run. Actions use immutable SHAs and least-privilege tokens.
+  CodeQL's JavaScript/TypeScript security-extended workflow passed on GitHub
+  on 2026-11-20; the owner reported no alerts. Actions use immutable SHAs and
+  least-privilege tokens.
 - **Embedded SVGs**: review any future animation SVGs for embedded
   `<script>` tags before adding them to `public/assets/`, since inline SVG
   can execute script if not sanitized.
@@ -118,16 +119,19 @@ remain launch gates; the checks are not a comprehensive security guarantee.
 
 ## Deployment and productionizing
 
-- **Static hosting (P1)**: publish the complete `dist/` output through a
-  GitHub Pages deployment workflow. The initial configured public URL is
-  `https://tarunrajnish.github.io/de-crash-course/`; deployment is pending.
+- **Static hosting (workflow implemented, activation pending)**: CI deploys
+  the complete `dist/` only from `master`, after build/tests/audit and
+  reusable Security jobs succeed for that commit. Enable Pages' GitHub
+  Actions source and push the approved changes to start deployment.
+  The configured public URL is `https://tarunrajnish.github.io/de-crash-course/`.
 - **HTTPS (P1) / custom domain (optional)**: verify HTTPS at launch.
   A later domain change requires DNS, Pages settings, and a rebuild with
   `VITE_SITE_URL` set to the final URL.
-- **CI build check**: implemented (`.github/workflows/ci.yml`), running
-  `npm ci`, dependency audit, `tsc --noEmit`, `npm run build`, and all tests on every push/PR. Only runs
-  once this repo is actually hosted on GitHub (currently pushed to a local
-  remote only).
+- **CI build check**: implemented and running on GitHub
+  (`.github/workflows/ci.yml`), with `npm ci`, dependency audit,
+  `tsc --noEmit`, `npm run build`, all tests, and reusable Security checks.
+  Master pushes/manual CI runs can deploy after those checks pass; PRs
+  and other branches cannot deploy.
 - **Cache headers (host-dependent)**: Vite fingerprints asset filenames.
   GitHub Pages manages cache headers; custom header tuning is deferred
   unless a future host or proxy exposes that control.
