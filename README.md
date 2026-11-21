@@ -113,6 +113,37 @@ Search engines only honor `robots.txt` at a hostname's root; a project
 site's copy under `/de-crash-course/` does not control the account-wide
 `tarunrajnish.github.io` host. Submit the sitemap directly for this project.
 
+## Analytics and privacy
+
+Production uses the direct GA4 tag for `G-Y4ZYTKJ10V`, not a Tag Manager
+container. Analytics runs only on the production origin and path configured
+by `VITE_SITE_URL`; development and local previews do not track visitors.
+The tag is not loaded and no Google Analytics requests are made until the
+visitor accepts the optional analytics banner. This is basic, opt-in consent
+handling, without pre-consent cookieless pings.
+
+The footer's **Privacy & analytics** button opens the preference panel.
+Accept and Decline have equal prominence. The panel explains cookie-based
+identifiers, page/referrer/device data, approximate location, and Google's
+privacy information. Advertising consent stays denied, and Google signals
+and advertising personalization are disabled in the tag configuration.
+Consent is saved in `de-crash-course-analytics-consent` in `localStorage`.
+
+Cookies use the `de_crash_course` prefix, the deployment path, and a host-only
+domain. Withdrawing consent removes this site's analytics cookies, disables
+measurement, and reloads the page so the already-loaded tag stops running.
+Other tabs respond to consent changes. Reading progress and theme preferences
+are preserved. Storage failures keep analytics disabled on the current page
+and show an error; blocked tags report an unavailable status.
+
+GA4 collects page views and the enhanced-measurement events enabled in the
+web stream. It does not receive custom reading-progress events, search text,
+or feedback content from this site. Standard reports may take 24-48 hours
+to finish processing; use Realtime to confirm visits from consenting readers.
+Review the property's data-sharing, retention, and enhanced-measurement
+settings separately in Google Analytics. Avoid putting personal information
+in page URLs, campaign parameters, or event data.
+
 ## Security checks
 
 CI runs `npm audit --audit-level=high`, including development dependencies,
@@ -163,11 +194,13 @@ Avoid enabling a second default-setup CodeQL scan alongside this workflow.
 
 Before deployment, require the build and security checks in branch rules,
 review CodeQL results, and verify the actual hosting configuration.
-Production pages now include a restrictive meta CSP before resource loads.
+Production pages include a restrictive meta CSP before resource loads.
 The build hashes the exact early theme script; other inline scripts, inline
-style attributes, dynamic code evaluation, background connections, forms,
-objects, and frames are blocked. Scripts/styles/fonts/images load only from
-the site's origin. This policy is added during pre-rendering, not development,
+style attributes, dynamic code evaluation, forms, objects, and frames are
+blocked. Scripts and images allow the site's origin and the required Google
+Analytics/tag origins; connections allow only the analytics/tag endpoints.
+Styles and fonts remain same-origin. Google scripts are loaded only after
+analytics consent. This policy is added during pre-rendering, not development,
 so Vite's local HMR remains usable.
 
 Fraunces and Inter are self-hosted WOFF2 files with their existing weights,

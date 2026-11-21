@@ -17,7 +17,7 @@ does not authorize its implementation or infrastructure changes.
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
 | P3: optional support reminders | Reading milestone donation prompts | Small, dismissible prompts at 5%, 25%, 50%, 75%, and 100% overall progress link to the same Venmo profile without blocking reading |
 | P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
-| Optional | Custom domain and analytics decision | Configure a domain when chosen; revisit privacy requirements before introducing visitor analytics |
+| Optional | Custom domain | Configure a domain when chosen |
 | Host-dependent | Custom cache headers | Tune headers only if a future host or proxy exposes that control |
 
 ## User experience
@@ -79,15 +79,3 @@ does not authorize its implementation or infrastructure changes.
   unless a future host or proxy exposes that control.
 - **Versioned releases (P1)**: tag releases so a bad deploy can be rolled
   back by redeploying a previous tag.
-
-## Analytics
-
-- **Analytics decision (optional)**: introducing visitor analytics requires
-  an explicit product/privacy decision.
-- **If ever added, prefer privacy-respecting, aggregate-only tools**:
-  self-hosted Plausible or Umami, or Cloudflare's free web analytics. No
-  cookies, no cross-site identifiers, no personal data.
-- **If traffic metrics are ever wanted**, server/CDN access log counts
-  (requests per path) are enough for "which topics get read" without adding
-  any   client-side script at all, if the selected hosting provider exposes them.
-  GitHub Pages does not provide repository owners with raw access logs.

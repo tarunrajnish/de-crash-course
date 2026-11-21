@@ -41,12 +41,12 @@ try {
     policy.setAttribute("http-equiv", "Content-Security-Policy");
     policy.setAttribute("content", [
       "default-src 'none'",
-      `script-src 'self' 'sha256-${hash}'`,
+      `script-src 'self' 'sha256-${hash}' https://www.googletagmanager.com`,
       "style-src 'self'",
       "style-src-attr 'none'",
       "font-src 'self'",
-      "img-src 'self'",
-      "connect-src 'none'",
+      "img-src 'self' https://www.googletagmanager.com https://*.google-analytics.com",
+      "connect-src https://www.googletagmanager.com https://*.google-analytics.com",
       "object-src 'none'",
       "base-uri 'none'",
       "form-action 'none'",

@@ -158,7 +158,7 @@ test("static lesson diagrams ship accessible images and captions without enablin
   assert.equal(document.querySelector(".animation-figure"), null);
 });
 
-test("every generated HTML page permits only local resources and its exact early theme script", async () => {
+test("every generated HTML page restricts resources to local files and scoped analytics endpoints", async () => {
   const pages = (await readdir("dist", { recursive: true })).filter(file => file.endsWith(".html"));
   for (const page of pages) {
     const { document } = parseHTML(await readFile(resolve("dist", page), "utf8"));
@@ -172,11 +172,13 @@ test("every generated HTML page permits only local resources and its exact early
     const inlineScripts = [...document.querySelectorAll("script:not([src])")];
     assert.equal(inlineScripts.length, 1, page);
     const hash = createHash("sha256").update(inlineScripts[0].textContent).digest("base64");
-    assert.deepEqual(directives.get("script-src"), ["'self'", `'sha256-${hash}'`], page);
-    for (const name of ["style-src", "font-src", "img-src"]) {
+    assert.deepEqual(directives.get("script-src"), ["'self'", `'sha256-${hash}'`, "https://www.googletagmanager.com"], page);
+    for (const name of ["style-src", "font-src"]) {
       assert.deepEqual(directives.get(name), ["'self'"], `${page}: ${name}`);
     }
-    for (const name of ["default-src", "style-src-attr", "connect-src", "object-src", "base-uri", "form-action", "frame-src"]) {
+    assert.deepEqual(directives.get("img-src"), ["'self'", "https://www.googletagmanager.com", "https://*.google-analytics.com"], page);
+    assert.deepEqual(directives.get("connect-src"), ["https://www.googletagmanager.com", "https://*.google-analytics.com"], page);
+    for (const name of ["default-src", "style-src-attr", "object-src", "base-uri", "form-action", "frame-src"]) {
       assert.deepEqual(directives.get(name), ["'none'"], `${page}: ${name}`);
     }
     const head = [...document.head.children];

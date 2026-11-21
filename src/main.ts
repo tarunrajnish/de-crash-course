@@ -7,6 +7,7 @@ import { initTheme, toggleTheme } from "./lib/theme";
 import { initSearch } from "./lib/search";
 import { applyPageMetadata } from "./lib/seo";
 import { initGlossaryTooltips } from "./lib/glossaryTooltip";
+import { initAnalytics } from "./lib/analytics";
 
 initTheme();
 const siteTools = el("div", {
@@ -44,4 +45,6 @@ onRouteChange((route) => {
   app.appendChild(renderPage(route));
   document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
 });
+
+initAnalytics();
 
