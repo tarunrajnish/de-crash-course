@@ -9,7 +9,12 @@ import { applyPageMetadata } from "./lib/seo";
 import { initGlossaryTooltips } from "./lib/glossaryTooltip";
 
 initTheme();
-initSearch();
+const siteTools = el("div", {
+  className: "site-tools",
+  attrs: { role: "group", "aria-label": "Site controls" },
+});
+document.body.appendChild(siteTools);
+initSearch(siteTools);
 initGlossaryTooltips();
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -29,7 +34,7 @@ themeToggle.addEventListener("click", () => {
   toggleTheme();
   syncToggleLabel();
 });
-document.body.appendChild(themeToggle);
+siteTools.appendChild(themeToggle);
 
 onRouteChange((route) => {
   clear(app);

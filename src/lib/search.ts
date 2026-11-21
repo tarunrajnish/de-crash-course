@@ -46,7 +46,7 @@ export function matchesSearchQuery(text: string, query: string): boolean {
   return terms.every((term) => haystack.includes(term));
 }
 
-export function initSearch(): void {
+export function initSearch(controls: HTMLElement): void {
   const index = buildSearchIndex();
 
   const overlay = el("div", { className: "search-overlay" });
@@ -165,5 +165,5 @@ export function initSearch(): void {
   trigger.appendChild(el("span", { className: "search-trigger-label", text: "Search" }));
   trigger.appendChild(el("span", { className: "search-trigger-shortcut", text: "\u2318K" }));
   trigger.addEventListener("click", open);
-  document.body.appendChild(trigger);
+  controls.appendChild(trigger);
 }

@@ -143,7 +143,10 @@ test("global search finds tip explanations and code and navigates to the matchin
       configurable: true,
       value: { assign: href => { destination = href; } },
     });
-    initSearch();
+    const controls = document.createElement("div");
+    document.body.appendChild(controls);
+    initSearch(controls);
+    assert.ok(controls.querySelector(".search-trigger"), "Search belongs in the shared site controls");
     const input = document.querySelector(".search-input");
     input.value = "mysql median";
     input.dispatchEvent(new dom.window.Event("input"));

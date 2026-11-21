@@ -28,6 +28,9 @@ remain launch gates; the checks are not a comprehensive security guarantee.
 - **Concept organization**: 12 homepage tiles. Spark performance and
   optimization combines joins, partitioning, skew, pushdown, and caching.
   Existing lesson links and read progress are preserved after the merge.
+  Phone widths of 600px and below use two compact card columns; larger
+  screens retain the existing card size. Search and theme buttons share
+  a flex row, with 44px minimum tap targets on phones.
 
 - **Quick-reference cheatsheet**: implemented with SQL, Python, and data
   engineering groups, text/category filtering, shareable tip anchors, and
