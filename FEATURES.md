@@ -9,13 +9,12 @@ does not authorize its implementation or infrastructure changes.
 | --- | --- | --- |
 | P0: content review | Review public content | Finish reviewing material published on the live site |
 | P0: release confidence | Browser regression coverage | Complete coverage for direct navigation, search, theme/progress persistence, reset, and mobile layouts |
+| P0: testing cleanup | Disable temporary donation preview | Set `DONATION_TEST_MODE` to `false` and redeploy after popup testing is complete |
 | P1: discovery | Search Console and sitemap submission | Verify the site in Google Search Console and submit the sitemap |
 | P1: user feedback | Footer suggestion/correction box | Readers can submit written feedback that reaches the owner's email; confirm the recipient and delivery service before implementation |
 | P1: release recovery | Versioned releases | Tag releases so a previous version can be redeployed for rollback |
-| P2: optional support | Footer Venmo donation link | A low-key, optional support link opens the owner's Venmo profile, `@tarunrajnish` |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
-| P3: optional support reminders | Reading milestone donation prompts | Small, dismissible prompts at 5%, 25%, 50%, 75%, and 100% overall progress link to the same Venmo profile without blocking reading |
 | P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
 | Optional | Custom domain | Configure a domain when chosen |
 | Host-dependent | Custom cache headers | Tune headers only if a future host or proxy exposes that control |
@@ -31,21 +30,9 @@ does not authorize its implementation or infrastructure changes.
   Keep mail credentials outside the frontend and repository; confirm successful
   submission before showing a success message.
 
-- **Footer Venmo donation link (P2, planned)**: link to `@tarunrajnish` with
-  optional, low-pressure wording such as "Found this useful? Support via Venmo."
-  Keep it in the footer and open the profile directly, without payment forms,
-  suggested amounts, or payment tracking on this site.
-
-- **Reading milestone donation prompts (P3, planned)**: use overall, local
-  reading progress to offer the same optional Venmo link when a reader reaches
-  5%, 25%, 50%, 75%, and 100%. Recommend a small, non-modal, dismissible toast
-  that leaves lessons and navigation accessible and never takes keyboard focus.
-  Remember shown milestones locally across reloads and deployments.
-  Avoid prompts on every page load or several prompts in succession; show at
-  most one per visit and defer it while search is open. Finalize milestone
-  catch-up and progress-reset behavior before implementation. No donation is
-  required to continue reading. The site does not track donations or transmit
-  reading progress.
+- **Donation preview cleanup (P0)**: the temporary public test mode shows a
+  labeled support popup on every page load. Disable it after testing to use
+  the implemented 25%, 50%, 75%, and 100% milestones.
 
 - **Deep-linkable anchors (P2)**: link directly to a section or a specific
   self-test question so a link can point

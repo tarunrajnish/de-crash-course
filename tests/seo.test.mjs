@@ -158,6 +158,19 @@ test("static lesson diagrams ship accessible images and captions without enablin
   assert.equal(document.querySelector(".animation-figure"), null);
 });
 
+test("every static route includes a safe footer support link without embedding payment resources", async () => {
+  const pages = (await readdir("dist", { recursive: true })).filter(file => file.endsWith(".html"));
+  for (const page of pages) {
+    const { document } = parseHTML(await readFile(resolve("dist", page), "utf8"));
+    const link = document.querySelector("footer #venmo-support");
+    assert.ok(link, page);
+    assert.equal(link.getAttribute("href"), "https://venmo.com/tarunrajnish", page);
+    assert.equal(link.getAttribute("target"), "_blank", page);
+    assert.equal(link.getAttribute("rel"), "noopener noreferrer", page);
+    assert.equal(document.querySelector('script[src*="venmo"], iframe[src*="venmo"]'), null, page);
+  }
+});
+
 test("every generated HTML page restricts resources to local files and scoped analytics endpoints", async () => {
   const pages = (await readdir("dist", { recursive: true })).filter(file => file.endsWith(".html"));
   for (const page of pages) {

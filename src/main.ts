@@ -8,6 +8,7 @@ import { initSearch } from "./lib/search";
 import { applyPageMetadata } from "./lib/seo";
 import { initGlossaryTooltips } from "./lib/glossaryTooltip";
 import { initAnalytics } from "./lib/analytics";
+import { initDonationPrompts } from "./lib/donations";
 
 initTheme();
 const siteTools = el("div", {
@@ -47,4 +48,5 @@ onRouteChange((route) => {
 });
 
 initAnalytics();
+initDonationPrompts();
 

@@ -31,6 +31,33 @@ titles, headings, and repeated mentions stay plain. Hover, focus with the
 keyboard, or tap a term to read its definition. Escape or an outside click
 dismisses the explanation.
 
+## Optional support
+
+The footer links directly to `https://venmo.com/tarunrajnish`. A small,
+dismissible popup offers the same optional support link without payment forms,
+suggested amounts, or automatic focus changes. It waits while search or
+analytics preferences are open.
+
+**Temporary public test mode is enabled:** `DONATION_TEST_MODE = true` in
+`src/lib/donations.ts` shows the popup on every page load, regardless of
+progress or prior dismissal. Closing it hides it for that page. Test previews
+are clearly labeled and do not write donation milestone history.
+Set the flag to `false` and redeploy after testing.
+
+Normal mode uses overall topics marked as read, at 25%, 50%, 75%, and 100%.
+Opening a lesson or marking a concept completed can trigger a reminder.
+If several milestones are crossed together, only the highest new milestone
+is shown and lower reached milestones are treated as covered. At most one
+popup is shown per page load. Covered milestones are saved in
+`de-crash-course-donation-milestones` in localStorage and survive reading
+progress resets and deployments. Clearing site data removes that history.
+Storage failures disable reminders on the current page with a visible error;
+the footer link remains usable.
+
+The app does not send reading progress to Venmo or emit custom donation
+events. GA4's enabled outbound-click measurement can record support-link
+clicks after analytics consent; this site cannot confirm completed payments.
+
 ## Coverage
 
 The homepage has 12 concept tiles. Spark performance and optimization

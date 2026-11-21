@@ -3,6 +3,13 @@ import { canonicalCourseId, courseAliases } from "../content";
 import { estimatedReadingMinutes } from "./readingTime";
 
 const STORAGE_KEY = "de-crash-course-progress";
+export const PROGRESS_CHANGED_EVENT = "de-crash-course-progress-changed";
+
+function notifyProgressChanged(): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new window.Event(PROGRESS_CHANGED_EVENT));
+  }
+}
 
 function readVisited(): Set<string> {
   if (import.meta.env.SSR) return new Set();
@@ -18,6 +25,7 @@ function readVisited(): Set<string> {
 
 function writeVisited(visited: Set<string>): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited]));
+  notifyProgressChanged();
 }
 
 function key(courseId: string, topicId: string): string {
@@ -83,4 +91,5 @@ export function overallProgress(courses: Course[]): CourseProgress {
 
 export function resetProgress(): void {
   localStorage.removeItem(STORAGE_KEY);
+  notifyProgressChanged();
 }
