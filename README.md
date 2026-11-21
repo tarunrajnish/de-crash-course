@@ -41,10 +41,13 @@ The footer links directly to `https://venmo.com/tarunrajnish`. A small,
 dismissible popup offers the same optional support link without payment forms,
 suggested amounts, or automatic focus changes. It waits while search or
 analytics preferences are open.
-Both links show Venmo's official wordmark using unmodified, self-hosted PNGs
-from the [Venmo brand kit](https://venmo.com/about/brand). The white logo is
-used in dark mode and the blue logo in light mode, with space around the mark.
-No logo requests are sent to Venmo or its asset provider.
+Both links show a self-hosted 18px V icon on the same line as the support text.
+The glyph is adapted from [Simple Icons' Venmo icon](https://github.com/simple-icons/simple-icons/blob/6.23.0/icons/venmo.svg)
+under [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+Venmo trademarks remain their owner's property.
+The HTML uses a root-relative asset URL so Vite adds the deployment base
+exactly once in development and production. No logo requests go to an
+external provider.
 
 **Temporary public test mode is enabled:** `DONATION_TEST_MODE = true` in
 `src/lib/donations.ts` shows the popup on every page load, regardless of

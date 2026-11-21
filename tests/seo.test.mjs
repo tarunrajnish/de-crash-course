@@ -199,11 +199,12 @@ test("every static route includes a safe footer support link without embedding p
     assert.equal(link.getAttribute("rel"), "noopener noreferrer", page);
     assert.equal(link.querySelector(".venmo-logo").getAttribute("aria-hidden"), "true", page);
     const logos = [...link.querySelectorAll(".venmo-logo img")];
-    assert.equal(logos.length, 2, page);
+    assert.equal(logos.length, 1, page);
     for (const logo of logos) {
       assert.equal(logo.getAttribute("alt"), "", page);
       const url = new URL(logo.getAttribute("src"), home);
       assert.equal(url.origin, home.origin, page);
+      assert.equal(url.pathname, `${home.pathname}assets/venmo-v.svg`, page);
       await access(outputFile(url.pathname));
     }
     assert.equal(document.querySelector('script[src*="venmo"], iframe[src*="venmo"]'), null, page);

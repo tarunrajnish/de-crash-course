@@ -41,6 +41,11 @@ function installDOM() {
 test("the local cheatsheet preserves its route, footer link, grouped tips, code, and anchors", async () => {
   const html = await server.transformIndexHtml("/de-crash-course/", await readFile("index.html", "utf8"));
   assert.ok(parseHTML(html).document.querySelector("footer #local-cheatsheet"));
+  assert.equal(
+    parseHTML(html).document.querySelector("#venmo-support img").getAttribute("src"),
+    `${server.config.base}assets/venmo-v.svg`,
+    "Development must add the deployment base exactly once",
+  );
   assert.equal(pageMetadata({ name: "cheatsheet" }).found, true);
   const dom = installDOM();
   try {

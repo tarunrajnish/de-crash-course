@@ -31,8 +31,7 @@ function installDOM({ count, shown, values = new Map(), consentOpen = false, sea
     <button id="reading-control">Continue reading</button>
     <footer><a id="venmo-support" href="https://venmo.com/tarunrajnish">
     <span class="venmo-logo" aria-hidden="true">
-    <img class="venmo-logo-blue" src="/de-crash-course/assets/venmo-blue.png" alt="">
-    <img class="venmo-logo-white" src="/de-crash-course/assets/venmo-white.png" alt="">
+    <img src="/de-crash-course/assets/venmo-v.svg" alt="">
     </span><span>Support via Venmo</span></a>
     <p id="donation-status" hidden></p></footer>
     <section id="analytics-consent" hidden></section>
