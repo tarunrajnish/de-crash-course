@@ -33,6 +33,10 @@ dismisses the explanation.
 
 ## Optional support
 
+For feedback and suggestions, the footer links to `tarun.rajnish@gmail.com`
+using `mailto:`. Clicking opens the reader's email app; the site does not
+submit or store feedback.
+
 The footer links directly to `https://venmo.com/tarunrajnish`. A small,
 dismissible popup offers the same optional support link without payment forms,
 suggested amounts, or automatic focus changes. It waits while search or
@@ -311,8 +315,10 @@ walkthroughs, and expected-output narratives.
 Include dialect, version, or input assumptions where correctness depends
 on them. Existing tip IDs are shareable anchors and should remain stable.
 
-The cheatsheet is a personal interview reference linked only from the footer at `/cheatsheet/`
-under the configured deployment base. Readers can filter by text and
-category, and the global search includes each tip's title, explanation,
-and code. All entries are pre-rendered for direct links and reading without
-JavaScript. Tips do not affect lesson reading progress.
+The cheatsheet is a local-only personal interview reference. Run `npm run dev`
+and open `/cheatsheet/` under the configured base, or use the local footer link.
+Text/category filters and global search include tips during development.
+Production builds and `npm run preview` exclude the page, footer link,
+search entries, and tip content from the published assets and sitemap.
+Production cheatsheet URLs show Page not found. Tips remain in the source
+repository and do not affect lesson reading progress.

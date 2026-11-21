@@ -23,6 +23,7 @@ const PATHS: Record<string, string> = {
   link: '<path d="M9 15l6-6" /><path d="M8.5 16.5l-2 2a3 3 0 0 1-4.2-4.2l3-3a3 3 0 0 1 4.2 0" />' +
     '<path d="M15.5 7.5l2-2a3 3 0 0 1 4.2 4.2l-3 3a3 3 0 0 1-4.2 0" />',
   magnifier: '<circle cx="10.5" cy="10.5" r="6.5" /><path d="M20 20l-5-5" />',
+  close: '<path d="m6 6 12 12M18 6 6 18" />',
 };
 
 export function icon(name: keyof typeof PATHS, className = ""): HTMLElement {

@@ -107,7 +107,11 @@ test("the default test preview returns on each reload without changing milestone
       assert.equal(link.href, dom.document.getElementById("venmo-support").href);
       assert.equal(link.getAttribute("target"), "_blank");
       assert.equal(link.getAttribute("rel"), "noopener noreferrer");
-      dom.popup().querySelector("button").click();
+      const close = dom.popup().querySelector("button");
+      assert.equal(close.getAttribute("aria-label"), "Dismiss donation reminder");
+      assert.equal(close.textContent, "");
+      assert.ok(close.querySelector('svg[aria-hidden="true"] path'));
+      close.click();
       assert.equal(dom.popup().hidden, true);
       dom.flushObservers();
       initDonationPrompts();

@@ -1,5 +1,6 @@
 import { courses } from "../content";
 import { el } from "./dom";
+import { icon } from "./icons";
 import { overallProgress, PROGRESS_CHANGED_EVENT } from "./progress";
 
 // Temporary public preview requested for testing. Set false to use milestones.
@@ -34,9 +35,9 @@ export function initDonationPrompts(testMode = DONATION_TEST_MODE): void {
   const title = el("h2", { attrs: { id: "donation-popup-title" } });
   const close = el("button", {
     className: "donation-popup-close",
-    text: "Close",
     attrs: { type: "button", "aria-label": "Dismiss donation reminder" },
   });
+  close.appendChild(icon("close"));
   header.append(title, close);
   popup.appendChild(header);
   popup.appendChild(el("p", {

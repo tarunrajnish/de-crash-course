@@ -11,7 +11,9 @@ export function renderPage(route: Route): HTMLElement {
   if (pageMetadata(route).found) {
     switch (route.name) {
       case "home": return renderHome();
-      case "cheatsheet": return renderCheatsheet();
+      case "cheatsheet":
+        if (import.meta.env.LOCAL_CHEATSHEET) return renderCheatsheet();
+        break;
       case "topic-list": return renderTopicList(route.courseId);
       case "topic-detail": return renderTopicDetail(route.courseId, route.topicId);
     }

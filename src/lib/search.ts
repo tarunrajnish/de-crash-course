@@ -25,15 +25,17 @@ export function buildSearchIndex(): SearchEntry[] {
       });
     }
   }
-  for (const group of cheatsheetGroups) {
-    for (const tip of group.tips) {
-      entries.push({
-        route: { name: "cheatsheet" },
-        fragment: tip.id,
-        title: tip.title,
-        category: `Cheatsheet / ${group.title}`,
-        haystack: cheatsheetSearchText(group, tip),
-      });
+  if (import.meta.env.LOCAL_CHEATSHEET) {
+    for (const group of cheatsheetGroups) {
+      for (const tip of group.tips) {
+        entries.push({
+          route: { name: "cheatsheet" },
+          fragment: tip.id,
+          title: tip.title,
+          category: `Cheatsheet / ${group.title}`,
+          haystack: cheatsheetSearchText(group, tip),
+        });
+      }
     }
   }
   return entries;
@@ -54,9 +56,10 @@ export function initSearch(controls: HTMLElement): void {
 
   const inputRow = el("div", { className: "search-input-row" });
   inputRow.appendChild(icon("magnifier", "search-input-icon"));
+  const searchLabel = import.meta.env.LOCAL_CHEATSHEET ? "Search topics and quick tips" : "Search topics";
   const input = el("input", {
     className: "search-input",
-    attrs: { type: "text", placeholder: "Search topics and quick tips", "aria-label": "Search topics and quick tips" },
+    attrs: { type: "text", placeholder: searchLabel, "aria-label": searchLabel },
   });
   inputRow.appendChild(input);
   modal.appendChild(inputRow);
@@ -64,7 +67,10 @@ export function initSearch(controls: HTMLElement): void {
   const resultsList = el("div", { className: "search-results" });
   modal.appendChild(resultsList);
 
-  const emptyState = el("p", { className: "search-empty", text: "No topics or quick tips match that search." });
+  const emptyState = el("p", {
+    className: "search-empty",
+    text: import.meta.env.LOCAL_CHEATSHEET ? "No topics or quick tips match that search." : "No topics match that search.",
+  });
 
   overlay.appendChild(modal);
 
@@ -159,7 +165,7 @@ export function initSearch(controls: HTMLElement): void {
 
   const trigger = el("button", {
     className: "search-trigger",
-    attrs: { type: "button", "aria-label": "Search topics and quick tips" },
+    attrs: { type: "button", "aria-label": searchLabel },
   });
   trigger.appendChild(icon("magnifier", "search-trigger-icon"));
   trigger.appendChild(el("span", { className: "search-trigger-label", text: "Search" }));

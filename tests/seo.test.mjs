@@ -17,8 +17,11 @@ after(() => server.close());
 const { courses, courseAliases } = await server.ssrLoadModule("/src/content/index.ts");
 const { parseHash, parsePath, routeToPath } = await server.ssrLoadModule("/src/lib/router.ts");
 const { pageMetadata } = await server.ssrLoadModule("/src/lib/seo.ts");
+const { buildSearchIndex } = await server.ssrLoadModule("/src/lib/search.ts");
+const { renderPage } = await server.ssrLoadModule("/src/pages/index.ts");
+const { cheatsheetGroups } = await server.ssrLoadModule("/src/content/cheatsheet.ts");
 const home = new URL(pageMetadata({ name: "home" }).canonical);
-const routes = [{ name: "home" }, { name: "cheatsheet" }];
+const routes = [{ name: "home" }];
 for (const course of courses) {
   routes.push({ name: "topic-list", courseId: course.id });
   for (const topic of course.topics) {
@@ -31,6 +34,33 @@ function outputFile(pathname) {
   const relative = pathname.slice(home.pathname.length);
   return resolve("dist", relative.endsWith("/") || !relative ? `${relative}index.html` : relative);
 }
+
+test("production excludes the cheatsheet route, search results, sitemap entry, and bundled tips", async () => {
+  await assert.rejects(access("dist/cheatsheet/index.html"), { code: "ENOENT" });
+  assert.equal(pageMetadata({ name: "cheatsheet" }).found, false);
+  assert.equal(pageMetadata({ name: "cheatsheet" }).canonical, null);
+  assert.ok(buildSearchIndex().every(entry => entry.route.name === "topic-detail"));
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "document");
+  try {
+    globalThis.document = parseHTML("<html><body></body></html>").document;
+    assert.equal(renderPage({ name: "cheatsheet" }).querySelector("h1").textContent, "Page not found");
+  } finally {
+    if (previous) Object.defineProperty(globalThis, "document", previous);
+    else delete globalThis.document;
+  }
+  assert.equal((await readFile("dist/sitemap.xml", "utf8")).includes("/cheatsheet/"), false);
+  const files = (await readdir("dist", { recursive: true })).filter(file => /\.(html|js|map)$/.test(file));
+  for (const file of files) {
+    const text = await readFile(resolve("dist", file), "utf8");
+    for (const group of cheatsheetGroups) {
+      for (const tip of group.tips) assert.equal(text.includes(tip.id), false, `${file}: ${tip.id}`);
+    }
+    if (file.endsWith(".html")) {
+      const { document } = parseHTML(text);
+      assert.equal(document.querySelector('a[href*="/cheatsheet/"]'), null, file);
+    }
+  }
+});
 
 test("the homepage has 12 concept tiles and every lesson remains in exactly one concept", async () => {
   const { document } = parseHTML(await readFile("dist/index.html", "utf8"));
@@ -120,7 +150,7 @@ test("every page ships full HTML, unique metadata, and working internal links wi
       assert.equal(document.querySelectorAll("a.tile").length, courses.length);
       const cheatsheetPath = routeToPath({ name: "cheatsheet" });
       assert.equal(document.querySelector(`#app a[href="${cheatsheetPath}"]`), null);
-      assert.equal(document.querySelector(`footer a[href="${cheatsheetPath}"]`)?.textContent, "Cheatsheet");
+      assert.equal(document.querySelector(`footer a[href="${cheatsheetPath}"]`), null);
     }
     if (route.name === "topic-list") {
       const course = courses.find(c => c.id === route.courseId);
@@ -168,6 +198,8 @@ test("every static route includes a safe footer support link without embedding p
     assert.equal(link.getAttribute("target"), "_blank", page);
     assert.equal(link.getAttribute("rel"), "noopener noreferrer", page);
     assert.equal(document.querySelector('script[src*="venmo"], iframe[src*="venmo"]'), null, page);
+    const feedback = document.querySelector('footer a[href="mailto:tarun.rajnish@gmail.com"]');
+    assert.equal(feedback?.textContent, "tarun.rajnish@gmail.com", page);
   }
 });
 

@@ -5,7 +5,8 @@ import { createServer } from "vite";
 import { parseHTML } from "linkedom";
 
 const server = await createServer({
-  mode: "production",
+  mode: "development",
+  cacheDir: "node_modules/.vite-cheatsheet-tests",
   server: { middlewareMode: true, hmr: false, ws: false },
   appType: "custom",
   logLevel: "error",
@@ -14,6 +15,8 @@ after(() => server.close());
 
 const { cheatsheetGroups } = await server.ssrLoadModule("/src/content/cheatsheet.ts");
 const { renderCheatsheet } = await server.ssrLoadModule("/src/pages/cheatsheet.ts");
+const { renderPage } = await server.ssrLoadModule("/src/pages/index.ts");
+const { pageMetadata } = await server.ssrLoadModule("/src/lib/seo.ts");
 const { buildSearchIndex, matchesSearchQuery, initSearch } = await server.ssrLoadModule("/src/lib/search.ts");
 const { navigate, onRouteChange, routeToPath } = await server.ssrLoadModule("/src/lib/router.ts");
 
@@ -35,23 +38,30 @@ function installDOM() {
   };
 }
 
-test("the static cheatsheet preserves grouped tips, complete code, and shareable anchors", async () => {
-  const { document } = parseHTML(await readFile("dist/cheatsheet/index.html", "utf8"));
-  const ids = [...document.querySelectorAll("[id]")].map(node => node.id);
-  assert.equal(new Set(ids).size, ids.length, "IDs must be unique");
-  assert.deepEqual([...document.querySelectorAll(".cheatsheet-group h2")].map(node => node.textContent),
-    cheatsheetGroups.map(group => group.title));
-  const plain = text => text.replace(/`([^`]+)`/g, "$1");
-  for (const group of cheatsheetGroups) {
-    for (const tip of group.tips) {
-      const article = document.getElementById(tip.id);
-      assert.ok(article && !article.hidden, tip.id);
-      assert.equal(article.querySelector("h3 a").getAttribute("href"), `#${tip.id}`);
-      assert.deepEqual([...article.querySelectorAll("p")].map(node => node.textContent), tip.paragraphs.map(plain));
-      assert.equal(article.querySelector("pre code")?.textContent, tip.code);
-      assert.equal(article.querySelector("button"), null, "No copy controls");
+test("the local cheatsheet preserves its route, footer link, grouped tips, code, and anchors", async () => {
+  const html = await server.transformIndexHtml("/de-crash-course/", await readFile("index.html", "utf8"));
+  assert.ok(parseHTML(html).document.querySelector("footer #local-cheatsheet"));
+  assert.equal(pageMetadata({ name: "cheatsheet" }).found, true);
+  const dom = installDOM();
+  try {
+    const document = dom.document;
+    document.body.appendChild(renderPage({ name: "cheatsheet" }));
+    const ids = [...document.querySelectorAll("[id]")].map(node => node.id);
+    assert.equal(new Set(ids).size, ids.length, "IDs must be unique");
+    assert.deepEqual([...document.querySelectorAll(".cheatsheet-group h2")].map(node => node.textContent),
+      cheatsheetGroups.map(group => group.title));
+    const plain = text => text.replace(/`([^`]+)`/g, "$1");
+    for (const group of cheatsheetGroups) {
+      for (const tip of group.tips) {
+        const article = document.getElementById(tip.id);
+        assert.ok(article && !article.hidden, tip.id);
+        assert.equal(article.querySelector("h3 a").getAttribute("href"), `#${tip.id}`);
+        assert.deepEqual([...article.querySelectorAll("p")].map(node => node.textContent), tip.paragraphs.map(plain));
+        assert.equal(article.querySelector("pre code")?.textContent, tip.code);
+        assert.equal(article.querySelector("button"), null, "No copy controls");
+      }
     }
-  }
+  } finally { dom.restore(); }
 });
 
 test("text and category filters combine, announce counts, hide empty groups, and reset", () => {

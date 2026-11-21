@@ -293,6 +293,17 @@ button.site-footer-link {
   color: var(--rose);
 }
 
+.site-footer-feedback {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.site-footer-feedback a {
+  overflow-wrap: anywhere;
+}
+
 .analytics-consent {
   position: fixed;
   right: 18px;
@@ -393,7 +404,6 @@ button.site-footer-link {
   font-size: 17px;
 }
 
-.donation-popup-close,
 .donation-support-link {
   display: inline-flex;
   align-items: center;
@@ -407,7 +417,28 @@ button.site-footer-link {
 }
 
 .donation-popup-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+}
+
+.donation-popup-close:hover {
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+}
+
+.donation-popup-close .icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
 }
 
 .donation-support-link {

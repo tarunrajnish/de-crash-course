@@ -12,8 +12,11 @@ export function pageMetadata(route: Route) {
   let description = HOME_DESCRIPTION;
   let found = route.name !== "not-found";
   if (route.name === "cheatsheet") {
-    title = `SQL, Python & data engineering cheatsheet | ${SITE_NAME}`;
-    description = "Search quick SQL, MySQL, Python, and data engineering tips, common mistakes, code examples, and interview memory aids.";
+    found = import.meta.env.LOCAL_CHEATSHEET;
+    if (found) {
+      title = `SQL, Python & data engineering cheatsheet | ${SITE_NAME}`;
+      description = "Search quick SQL, MySQL, Python, and data engineering tips, common mistakes, code examples, and interview memory aids.";
+    }
   } else if (route.name === "topic-list") {
     const course = findCourse(route.courseId);
     found = Boolean(course);

@@ -11,7 +11,7 @@ does not authorize its implementation or infrastructure changes.
 | P0: release confidence | Browser regression coverage | Complete coverage for direct navigation, search, theme/progress persistence, reset, and mobile layouts |
 | P0: testing cleanup | Disable temporary donation preview | Set `DONATION_TEST_MODE` to `false` and redeploy after popup testing is complete |
 | P1: discovery | Search Console and sitemap submission | Verify the site in Google Search Console and submit the sitemap |
-| P1: user feedback | Footer suggestion/correction box | Readers can submit written feedback that reaches the owner's email; confirm the recipient and delivery service before implementation |
+| P1: user feedback | Footer suggestion/correction box | Add in-site submission beyond the existing email link; confirm the delivery service before implementation |
 | P1: release recovery | Versioned releases | Tag releases so a previous version can be redeployed for rollback |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
@@ -23,8 +23,9 @@ does not authorize its implementation or infrastructure changes.
 
 - **Footer suggestion/correction box (P1, planned)**: readers can write a
   suggestion or correction in the footer and submit it to the owner's email.
-  Include the page URL so a correction can be located. Confirm the recipient
-  email and delivery service before implementation: GitHub Pages cannot send
+  The footer already links to `tarun.rajnish@gmail.com`. Include the page URL
+  so a correction can be located. Confirm the delivery service before
+  implementation: GitHub Pages cannot send
   email itself. A managed form service or serverless endpoint needs spam
   protection, clear submission/error states, and a narrowly scoped CSP update.
   Keep mail credentials outside the frontend and repository; confirm successful
