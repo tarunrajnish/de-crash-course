@@ -1,8 +1,8 @@
 # Feature list
 
-Prioritized launch backlog and implementation status. Priorities describe
-recommended order; publication, commits, and infrastructure changes still
-require user authorization.
+Prioritized backlog and implementation status. Priorities describe
+recommended order; listing a feature does not authorize its implementation
+or infrastructure changes.
 
 ## Recommended order
 
@@ -12,8 +12,11 @@ require user authorization.
 | P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
 | P1: publish | Pages deployment complete | Personal repository and live site published; build/tests/audit, Gitleaks, and CodeQL gate each master deployment |
 | P1: verify launch | Finish discovery and launch checks | Live HTTPS, direct pages, assets/fonts, CSP hashes, canonical URLs, and an actual HTTP 404 verified; finish browser regression checks, submit the sitemap, and inspect Search Console |
+| P1: user feedback | Footer suggestion/correction box | Readers can submit written feedback that reaches the owner's email; confirm the recipient and delivery service before implementation |
+| P2: optional support | Footer Venmo donation link | A low-key, optional support link opens the owner's Venmo profile, `@tarunrajnish` |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
+| P3: optional support reminders | Reading milestone donation prompts | Small, dismissible prompts at 5%, 25%, 50%, 75%, and 100% overall progress link to the same Venmo profile without blocking reading |
 | P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
 | Optional | Custom domain and analytics decision | Configure a domain when chosen; revisit privacy requirements before introducing visitor analytics |
 
@@ -24,6 +27,31 @@ the owner reported no CodeQL alerts. Hosting checks and a public-content review
 remain launch gates; the checks are not a comprehensive security guarantee.
 
 ## User experience
+
+- **Footer suggestion/correction box (P1, planned)**: readers can write a
+  suggestion or correction in the footer and submit it to the owner's email.
+  Include the page URL so a correction can be located. Confirm the recipient
+  email and delivery service before implementation: GitHub Pages cannot send
+  email itself. A managed form service or serverless endpoint needs spam
+  protection, clear submission/error states, and a narrowly scoped CSP update.
+  Keep mail credentials outside the frontend and repository; confirm successful
+  submission before showing a success message.
+
+- **Footer Venmo donation link (P2, planned)**: link to `@tarunrajnish` with
+  optional, low-pressure wording such as "Found this useful? Support via Venmo."
+  Keep it in the footer and open the profile directly, without payment forms,
+  suggested amounts, or payment tracking on this site.
+
+- **Reading milestone donation prompts (P3, planned)**: use overall, local
+  reading progress to offer the same optional Venmo link when a reader reaches
+  5%, 25%, 50%, 75%, and 100%. Recommend a small, non-modal, dismissible toast
+  that leaves lessons and navigation accessible and never takes keyboard focus.
+  Remember shown milestones locally across reloads and deployments.
+  Avoid prompts on every page load or several prompts in succession; show at
+  most one per visit and defer it while search is open. Finalize milestone
+  catch-up and progress-reset behavior before implementation. No donation is
+  required to continue reading. The site does not track donations or transmit
+  reading progress.
 
 - **Concept organization**: 12 homepage tiles. Spark performance and
   optimization combines joins, partitioning, skew, pushdown, and caching.
