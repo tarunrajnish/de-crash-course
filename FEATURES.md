@@ -10,8 +10,8 @@ require user authorization.
 | --- | --- | --- |
 | P0: before publication | Complete security launch gates | Local scoped review, dependency audit, secret scans, CSP, and self-hosted fonts completed; GitHub CodeQL passed and owner reported no alerts; review public content and final hosting behavior |
 | P0: release confidence | Browser regression checks | Verify direct navigation, search, theme/progress persistence, reset, and mobile layouts; current SEO tests cover generated HTML and routing, not all browser interactions |
-| P1: publish | Activate Pages deployment | Personal GitHub repository published; gated deployment workflow implemented; enable Pages' GitHub Actions source and push approved workflow changes to deploy the complete `dist/` |
-| P1: verify launch | Live-site checks and Search Console | Verify HTTPS, deep links, assets, legacy redirects, an actual HTTP 404, and canonical URLs; submit the sitemap and inspect representative pages |
+| P1: publish | Pages deployment complete | Personal repository and live site published; build/tests/audit, Gitleaks, and CodeQL gate each master deployment |
+| P1: verify launch | Finish discovery and launch checks | Live HTTPS, direct pages, assets/fonts, CSP hashes, canonical URLs, and an actual HTTP 404 verified; finish browser regression checks, submit the sitemap, and inspect Search Console |
 | P2: learning navigation | Section/question anchors and related-topic links | Readers can share a specific section and discover connected concepts |
 | P2: interview preparation | Print stylesheet and PDF output | Topics print with readable tables and an intentional policy for revealed answers, without navigation controls |
 | P3: convenience | Additional keyboard navigation | Keyboard shortcuts complement standard links, tab navigation, and existing search shortcuts without interfering with text inputs |
@@ -119,11 +119,12 @@ remain launch gates; the checks are not a comprehensive security guarantee.
 
 ## Deployment and productionizing
 
-- **Static hosting (workflow implemented, activation pending)**: CI deploys
-  the complete `dist/` only from `master`, after build/tests/audit and
-  reusable Security jobs succeed for that commit. Enable Pages' GitHub
-  Actions source and push the approved changes to start deployment.
-  The configured public URL is `https://tarunrajnish.github.io/de-crash-course/`.
+- **Static hosting (deployed)**: CI deploys the complete `dist/` only from
+  `master`, after build/tests/audit and reusable Security jobs succeed for
+  that commit. Pages' GitHub Actions source is enabled. The live site is
+  `https://tarunrajnish.github.io/de-crash-course/`; HTTPS, direct pages,
+  assets/fonts, CSP hashes, canonical URLs, and HTTP 404 behavior were
+  verified on 2026-11-20.
 - **HTTPS (P1) / custom domain (optional)**: verify HTTPS at launch.
   A later domain change requires DNS, Pages settings, and a rebuild with
   `VITE_SITE_URL` set to the final URL.

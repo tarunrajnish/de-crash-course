@@ -62,7 +62,7 @@ Open the printed local URL (defaults to `http://localhost:5173/de-crash-course/`
 
 ## SEO and static publishing
 
-The initial public URL is `https://tarunrajnish.github.io/de-crash-course/`.
+The live site is `https://tarunrajnish.github.io/de-crash-course/`.
 Course and topic links use real paths with trailing slashes. The build
 creates an `index.html` in each route directory, containing the taught
 content, self-tests, crawlable links, and page-specific metadata before
