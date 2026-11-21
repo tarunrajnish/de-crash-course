@@ -66,6 +66,12 @@ remain launch gates; the checks are not a comprehensive security guarantee.
   "Clearing site data resets progress."
   Homepage and course-card bars remain visible at zero progress; the reset
   button appears once at least one topic has been opened.
+- **Estimated reading time**: global progress, each concept tile, and
+  concept pages show remaining and total time. Estimates use 200 words
+  per minute, rounded up per topic, including written examples and
+  self-tests/answers but excluding videos and practice time. Opened topics
+  reduce remaining time using existing read markers; reset restores it.
+  Progress uses native, accessible bars compatible with the production CSP.
 - **Inline code formatting**: implemented. Any backtick-wrapped command or config key
   in prose (paragraphs, warnings, self-test, worked examples) renders as
   a styled inline code chip. Copy buttons and clipboard integration have

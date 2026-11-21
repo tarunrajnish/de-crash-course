@@ -1,5 +1,6 @@
 import type { Course } from "../content/types";
 import { canonicalCourseId, courseAliases } from "../content";
+import { estimatedReadingMinutes } from "./readingTime";
 
 const STORAGE_KEY = "de-crash-course-progress";
 
@@ -45,23 +46,30 @@ export function isVisited(courseId: string, topicId: string): boolean {
 export interface CourseProgress {
   visited: number;
   total: number;
+  remainingMinutes: number;
+  totalMinutes: number;
 }
 
 export function courseProgress(course: Course): CourseProgress {
-  const visited = readVisited();
-  const count = course.topics.filter((t) => hasVisited(visited, course.id, t.id)).length;
-  return { visited: count, total: course.topics.length };
+  return overallProgress([course]);
 }
 
 export function overallProgress(courses: Course[]): CourseProgress {
   const visited = readVisited();
   let count = 0;
   let total = 0;
+  let remainingMinutes = 0;
+  let totalMinutes = 0;
   for (const course of courses) {
     total += course.topics.length;
-    count += course.topics.filter((t) => hasVisited(visited, course.id, t.id)).length;
+    for (const topic of course.topics) {
+      const minutes = estimatedReadingMinutes(topic);
+      totalMinutes += minutes;
+      if (hasVisited(visited, course.id, topic.id)) count++;
+      else remainingMinutes += minutes;
+    }
   }
-  return { visited: count, total };
+  return { visited: count, total, remainingMinutes, totalMinutes };
 }
 
 export function resetProgress(): void {

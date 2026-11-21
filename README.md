@@ -11,6 +11,14 @@ section.
 Previous and Next links at the end of each lesson follow the order within
 its concept, stopping at the first and last topics.
 
+Global progress, concept tiles, and concept pages show estimated remaining
+and total reading time. Estimates use 200 words per minute, rounded up per
+topic, including written lesson content, tables, worked examples, and
+self-tests/answers. Video duration and practice time are excluded.
+Remaining time drops when topics are opened, matching the existing read
+markers, and returns to the total when progress is reset. Estimates and
+progress stay device-local; they do not measure time spent reading.
+
 Each lesson selects around five core concepts, with a maximum of ten.
 Only the first occurrence of each concept in the lesson body gets a
 theme-aware accent color;
@@ -168,6 +176,7 @@ pages and local font URLs at project-site and custom-domain bases.
 - `src/lib/seo.ts`: shared page metadata for the browser and static build
 - `scripts/prerender.mjs`: generates static pages and discovery files
 - `src/lib/theme.ts`: dark/light theme toggle, persisted in `localStorage`
+- `src/lib/readingTime.ts`: content-based reading estimates shared by progress displays
 - `src/lib/icons.ts`: small decorative SVG icon set used on topic cards
 - `src/pages/*.ts`: home, topic list, and topic detail page renderers
 - `src/style.css`: palette and layout (dark-default, green accent, rose

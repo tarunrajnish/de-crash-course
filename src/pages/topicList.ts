@@ -4,6 +4,7 @@ import { icon, TOPIC_ICONS } from "../lib/icons";
 import { routeToPath } from "../lib/router";
 import { breadcrumb } from "../lib/breadcrumb";
 import { courseProgress, isVisited } from "../lib/progress";
+import { readingTimeLabel, READING_TIME_DESCRIPTION } from "../lib/readingTime";
 
 function iconIndexFor(key: string): number {
   let hash = 0;
@@ -30,15 +31,22 @@ export function renderTopicList(courseId: string): HTMLElement {
   root.appendChild(el("h1", { className: "page-title", text: course.title }));
   root.appendChild(el("p", { className: "page-subtitle", text: course.shortDescription }));
 
-  const { visited, total } = courseProgress(course);
+  const progress = courseProgress(course);
+  const { visited, total } = progress;
   const progressWrap = el("div", {
     className: "progress-meter",
   });
-  const progressBar = el("div", { className: "progress-meter-track" });
-  const pct = total > 0 ? Math.round((visited / total) * 100) : 0;
-  progressBar.appendChild(el("div", { className: "progress-meter-fill", attrs: { style: `width: ${pct}%` } }));
+  const progressBar = el("progress", {
+    className: "progress-meter-track",
+    attrs: { value: String(visited), max: String(total || 1), "aria-label": `${course.title}: topics read` },
+  });
   progressWrap.appendChild(progressBar);
   progressWrap.appendChild(el("span", { className: "progress-meter-label", text: `${visited} / ${total} read` }));
+  progressWrap.appendChild(el("span", {
+    className: "reading-time-estimate",
+    text: readingTimeLabel(progress.remainingMinutes, progress.totalMinutes),
+    attrs: { title: READING_TIME_DESCRIPTION },
+  }));
   root.appendChild(progressWrap);
 
   const list = el("div", { className: "topic-list" });

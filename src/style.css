@@ -688,24 +688,22 @@ a:hover {
 }
 
 .tile-progress {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
 }
 
 .tile-progress-track {
-  flex: 1;
+  width: 100%;
+  min-width: 0;
   height: 4px;
-  border-radius: 999px;
-  background: var(--border-soft);
-  overflow: hidden;
 }
 
-.tile-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--accent);
+.tile-progress .reading-time-estimate {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
 }
 
 .tile-progress-label {
@@ -718,6 +716,7 @@ a:hover {
 
 .progress-meter {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin-top: 6px;
@@ -761,24 +760,49 @@ a:hover {
 }
 
 .progress-meter-track {
-  flex: 1;
+  flex: 1 1 160px;
+  min-width: 0;
   max-width: 280px;
   height: 6px;
+}
+
+.progress-meter-track,
+.tile-progress-track {
+  appearance: none;
+  border: 0;
   border-radius: 999px;
   background: var(--border-soft);
+  color: var(--accent);
   overflow: hidden;
 }
 
-.progress-meter-fill {
-  height: 100%;
+.progress-meter-track::-webkit-progress-bar,
+.tile-progress-track::-webkit-progress-bar {
+  border-radius: 999px;
+  background: var(--border-soft);
+}
+
+.progress-meter-track::-webkit-progress-value,
+.tile-progress-track::-webkit-progress-value {
   border-radius: 999px;
   background: var(--accent);
-  transition: width 0.2s ease;
+}
+
+.progress-meter-track::-moz-progress-bar,
+.tile-progress-track::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--accent);
 }
 
 .progress-meter-label {
-  font: 600 12.5px/1 var(--mono);
+  font: 600 12.5px/1.4 var(--mono);
   color: var(--text-faint);
+}
+
+.reading-time-estimate {
+  font: 400 12px/1.4 var(--sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
 }
 
 .topic-list {

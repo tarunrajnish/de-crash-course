@@ -4,6 +4,7 @@ import { icon } from "../lib/icons";
 import { routeToPath } from "../lib/router";
 import { courseProgress, overallProgress, resetProgress } from "../lib/progress";
 import { addProgressNotice } from "../lib/progressNotice";
+import { readingTimeLabel, READING_TIME_DESCRIPTION } from "../lib/readingTime";
 
 const sellingPoints = [
   {
@@ -40,17 +41,24 @@ export function renderHome(): HTMLElement {
 
   root.appendChild(el("div", { className: "section-divider" }));
 
-  const { visited: overallVisited, total: overallTotal } = overallProgress(courses);
-  const overallPct = overallTotal > 0 ? Math.round((overallVisited / overallTotal) * 100) : 0;
+  const overall = overallProgress(courses);
+  const { visited: overallVisited, total: overallTotal } = overall;
   const overallWrap = el("div", {
     className: "progress-meter progress-meter--overall",
   });
-  const overallTrack = el("div", { className: "progress-meter-track" });
-  overallTrack.appendChild(el("div", { className: "progress-meter-fill", attrs: { style: `width: ${overallPct}%` } }));
+  const overallTrack = el("progress", {
+    className: "progress-meter-track",
+    attrs: { value: String(overallVisited), max: String(overallTotal || 1), "aria-label": "Topics read overall" },
+  });
   overallWrap.appendChild(overallTrack);
   overallWrap.appendChild(
     el("span", { className: "progress-meter-label", text: `${overallVisited} / ${overallTotal} topics read overall` }),
   );
+  overallWrap.appendChild(el("span", {
+    className: "reading-time-estimate",
+    text: readingTimeLabel(overall.remainingMinutes, overall.totalMinutes),
+    attrs: { title: READING_TIME_DESCRIPTION },
+  }));
   if (overallVisited > 0) {
     const resetButton = el("button", {
       className: "progress-reset",
@@ -92,15 +100,22 @@ export function renderHome(): HTMLElement {
     const cta = el("span", { className: "tile-cta", text: "Start reading \u2192" });
     tile.appendChild(cta);
 
-    const { visited, total } = courseProgress(course);
-    const pct = total > 0 ? Math.round((visited / total) * 100) : 0;
+    const progress = courseProgress(course);
+    const { visited, total } = progress;
     const tileProgress = el("div", {
       className: "tile-progress",
     });
-    const tileTrack = el("div", { className: "tile-progress-track" });
-    tileTrack.appendChild(el("div", { className: "tile-progress-fill", attrs: { style: `width: ${pct}%` } }));
+    const tileTrack = el("progress", {
+      className: "tile-progress-track",
+      attrs: { value: String(visited), max: String(total || 1), "aria-label": `${course.title}: topics read` },
+    });
     tileProgress.appendChild(tileTrack);
     tileProgress.appendChild(el("span", { className: "tile-progress-label", text: `${visited}/${total}` }));
+    tileProgress.appendChild(el("span", {
+      className: "reading-time-estimate",
+      text: readingTimeLabel(progress.remainingMinutes, progress.totalMinutes),
+      attrs: { title: READING_TIME_DESCRIPTION },
+    }));
     tile.appendChild(tileProgress);
 
     grid.appendChild(tile);
