@@ -209,3 +209,19 @@ test("tip fragment changes preserve the rendered page while legacy hash routes s
     dom.restore();
   }
 });
+
+test("fit-to-screen view toggles on button and Escape without hiding any tip", () => {
+  const dom = installDOM();
+  try {
+    const page = renderCheatsheet();
+    document.body.appendChild(page);
+    const toggle = page.querySelector(".cheatsheet-fit-toggle");
+    toggle.dispatchEvent(new dom.window.Event("click"));
+    assert.equal(page.classList.contains("cheatsheet-sheet"), true);
+    assert.equal(toggle.getAttribute("aria-pressed"), "true");
+    assert.equal([...page.querySelectorAll(".cheatsheet-tip")].filter(tip => tip.hidden).length, 0);
+    dom.window.dispatchEvent(Object.assign(new dom.window.Event("keydown"), { key: "Escape" }));
+    assert.equal(page.classList.contains("cheatsheet-sheet"), false);
+    assert.equal(toggle.getAttribute("aria-pressed"), "false");
+  } finally { dom.restore(); }
+});

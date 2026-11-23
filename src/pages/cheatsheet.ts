@@ -32,6 +32,12 @@ export function renderCheatsheet(): HTMLElement {
   }
   categoryLabel.appendChild(category);
   controls.appendChild(categoryLabel);
+  const fitToggle = el("button", {
+    className: "cheatsheet-fit-toggle",
+    text: "Fit to screen",
+    attrs: { type: "button", "aria-pressed": "false" },
+  });
+  controls.appendChild(fitToggle);
   root.appendChild(controls);
 
   const total = cheatsheetGroups.reduce((count, group) => count + group.tips.length, 0);
@@ -41,6 +47,8 @@ export function renderCheatsheet(): HTMLElement {
     attrs: { role: "status", "aria-live": "polite", "aria-atomic": "true" },
   });
   root.appendChild(status);
+  const body = el("div", { className: "cheatsheet-body" });
+  root.appendChild(body);
   const groups = cheatsheetGroups.map(group => {
     const section = el("section", {
       className: "cheatsheet-group",
@@ -73,7 +81,7 @@ export function renderCheatsheet(): HTMLElement {
       section.appendChild(article);
       return { article, haystack: cheatsheetSearchText(group, tip) };
     });
-    root.appendChild(section);
+    body.appendChild(section);
     return { section, id: group.id, tips };
   });
   const empty = el("p", {
@@ -81,7 +89,7 @@ export function renderCheatsheet(): HTMLElement {
     text: "No tips match. Try another search or category.",
     attrs: { hidden: "" },
   });
-  root.appendChild(empty);
+  body.appendChild(empty);
 
   function filter(): void {
     let visible = 0;
@@ -98,11 +106,43 @@ export function renderCheatsheet(): HTMLElement {
     }
     status.textContent = `${visible} of ${total} tips`;
     empty.hidden = visible > 0;
+    fitSheet();
   }
+
+  const MAX_SHEET_FONT = 16;
+  const MIN_SHEET_FONT = 5.5;
+  // Picks the largest font size at which every column fits on one screen.
+  function fitSheet(): void {
+    if (!root.classList.contains("cheatsheet-sheet") || !body.clientWidth) return;
+    body.style.overflowX = "hidden";
+    let size = MAX_SHEET_FONT;
+    for (; size > MIN_SHEET_FONT; size -= 0.25) {
+      body.style.fontSize = `${size}px`;
+      if (body.scrollWidth <= body.clientWidth + 1) break;
+    }
+    body.style.fontSize = `${size}px`;
+    if (body.scrollWidth > body.clientWidth + 1) body.style.overflowX = "auto";
+  }
+
+  function setSheet(on: boolean): void {
+    root.classList.toggle("cheatsheet-sheet", on);
+    fitToggle.textContent = on ? "Exit fit view" : "Fit to screen";
+    fitToggle.setAttribute("aria-pressed", String(on));
+    if (on) fitSheet();
+    else {
+      body.style.fontSize = "";
+      body.style.overflowX = "";
+    }
+  }
+  fitToggle.addEventListener("click", () => setSheet(!root.classList.contains("cheatsheet-sheet")));
   input.addEventListener("input", filter);
   category.addEventListener("change", filter);
   const view = document.defaultView;
   if (view) {
+    view.addEventListener("resize", fitSheet);
+    view.addEventListener("keydown", event => {
+      if (event.key === "Escape" && root.classList.contains("cheatsheet-sheet")) setSheet(false);
+    });
     view.addEventListener("hashchange", () => {
       const target = root.ownerDocument.getElementById(view.location.hash.slice(1));
       if (target?.classList.contains("cheatsheet-tip") && target.hidden) {
