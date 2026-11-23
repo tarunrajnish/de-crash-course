@@ -696,8 +696,7 @@ a:hover {
 }
 
 .home-overview {
-  max-width: 62ch;
-  margin: -16px 0 40px;
+  margin: -16px 0 32px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-muted);
