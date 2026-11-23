@@ -56,6 +56,44 @@ ORDER BY sort_key, value;`,
         code: "SELECT CONCAT(first_name, ' ', COALESCE(last_name, '')) FROM people;",
       },
       {
+        id: "sql-hierarchy-node-types",
+        title: "Hierarchy: classify root, inner, leaf",
+        paragraphs: [
+          "A row with `parent IS NULL` is a root; a node that appears as another row's parent is internal; any other node is a leaf. Filter NULLs inside `IN`/`NOT IN` subqueries, because `NOT IN` with a NULL can return no rows. A self-join can duplicate rows, so use `IN`/`EXISTS` when only testing existence.",
+        ],
+        code: `SELECT id,
+  CASE
+    WHEN parent IS NULL THEN 'Root'
+    WHEN id IN (SELECT parent FROM tree WHERE parent IS NOT NULL) THEN 'Inner'
+    ELSE 'Leaf'
+  END AS node_type
+FROM tree;`,
+      },
+      {
+        id: "sql-count-parents-children",
+        title: "Counting entities across detail tables",
+        paragraphs: [
+          "Use `COUNT(DISTINCT id)` when duplicate rows or repeated relationships can occur. Start from the parent table with `LEFT JOIN` and wrap counts in `COALESCE(count, 0)` so parents without children remain; `INNER JOIN` drops them. Alternatively aggregate each child table separately before joining, which avoids multiplying rows.",
+        ],
+        code: `SELECT p.id, COALESCE(c.n, 0) AS child_count
+FROM parents p
+LEFT JOIN (
+  SELECT parent_id, COUNT(DISTINCT id) AS n
+  FROM children
+  GROUP BY parent_id
+) c ON c.parent_id = p.id;`,
+      },
+      {
+        id: "sql-mysql-replace",
+        title: "MySQL: REPLACE and REGEXP_REPLACE",
+        paragraphs: [
+          "`REPLACE(string, from, to)` substitutes every occurrence of an exact substring; case sensitivity depends on collation. Nest calls for multiple substitutions. MySQL 8 adds `REGEXP_REPLACE(col, pattern, replacement)` for patterns. `SELECT` does not modify stored data; use `UPDATE` only intentionally.",
+          "`REPLACE` works on strings, so numeric input is converted first. Quote string arguments, and cast back if a number is needed. `CEIL` rounds up, `FLOOR` rounds down, and `ROUND` rounds to nearest.",
+        ],
+        code: `SELECT REPLACE(phone, '-', '') FROM customers;
+SELECT CAST(REPLACE(CAST(n AS CHAR), '0', '') AS UNSIGNED) FROM nums;`,
+      },
+      {
         id: "sql-primary-natural-surrogate-keys",
         title: "Primary, natural, and surrogate keys",
         paragraphs: [
