@@ -2,10 +2,11 @@ import { cheatsheetGroups, cheatsheetSearchText } from "../content/cheatsheet";
 import { breadcrumb } from "../lib/breadcrumb";
 import { el } from "../lib/dom";
 import { renderInlineText } from "../lib/inlineCode";
+import { routeToPath } from "../lib/router";
 import { matchesSearchQuery } from "../lib/search";
 
 export function renderCheatsheet(): HTMLElement {
-  const root = el("div", { className: "page page-cheatsheet" });
+  const root = el("div", { className: "page page-cheatsheet cheatsheet-sheet" });
   root.appendChild(breadcrumb([
     { label: "Home", route: { name: "home" } },
     { label: "Cheatsheet", route: { name: "cheatsheet" } },
@@ -17,6 +18,11 @@ export function renderCheatsheet(): HTMLElement {
   }));
 
   const controls = el("div", { className: "cheatsheet-controls" });
+  controls.appendChild(el("a", {
+    className: "cheatsheet-home",
+    text: "← Home",
+    attrs: { href: routeToPath({ name: "home" }) },
+  }));
   const searchLabel = el("label", { className: "cheatsheet-field", text: "Search quick tips" });
   const input = el("input", {
     attrs: { type: "search", placeholder: "Try median, matrix, or CDC" },
@@ -32,12 +38,6 @@ export function renderCheatsheet(): HTMLElement {
   }
   categoryLabel.appendChild(category);
   controls.appendChild(categoryLabel);
-  const fitToggle = el("button", {
-    className: "cheatsheet-fit-toggle",
-    text: "Fit to screen",
-    attrs: { type: "button", "aria-pressed": "false" },
-  });
-  controls.appendChild(fitToggle);
   root.appendChild(controls);
 
   const total = cheatsheetGroups.reduce((count, group) => count + group.tips.length, 0);
@@ -113,7 +113,7 @@ export function renderCheatsheet(): HTMLElement {
   const MIN_SHEET_FONT = 5.5;
   // Picks the largest font size at which every column fits on one screen.
   function fitSheet(): void {
-    if (!root.classList.contains("cheatsheet-sheet") || !body.clientWidth) return;
+    if (!body.clientWidth) return;
     body.style.overflowX = "hidden";
     let size = MAX_SHEET_FONT;
     for (; size > MIN_SHEET_FONT; size -= 0.25) {
@@ -124,25 +124,13 @@ export function renderCheatsheet(): HTMLElement {
     if (body.scrollWidth > body.clientWidth + 1) body.style.overflowX = "auto";
   }
 
-  function setSheet(on: boolean): void {
-    root.classList.toggle("cheatsheet-sheet", on);
-    fitToggle.textContent = on ? "Exit fit view" : "Fit to screen";
-    fitToggle.setAttribute("aria-pressed", String(on));
-    if (on) fitSheet();
-    else {
-      body.style.fontSize = "";
-      body.style.overflowX = "";
-    }
-  }
-  fitToggle.addEventListener("click", () => setSheet(!root.classList.contains("cheatsheet-sheet")));
   input.addEventListener("input", filter);
   category.addEventListener("change", filter);
   const view = document.defaultView;
   if (view) {
+    // The page is not attached yet, so measure after it mounts.
+    view.requestAnimationFrame?.(() => fitSheet());
     view.addEventListener("resize", fitSheet);
-    view.addEventListener("keydown", event => {
-      if (event.key === "Escape" && root.classList.contains("cheatsheet-sheet")) setSheet(false);
-    });
     view.addEventListener("hashchange", () => {
       const target = root.ownerDocument.getElementById(view.location.hash.slice(1));
       if (target?.classList.contains("cheatsheet-tip") && target.hidden) {

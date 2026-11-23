@@ -607,25 +607,6 @@ a:hover {
   font: 13px/1.65 var(--mono);
 }
 
-.cheatsheet-fit-toggle {
-  align-self: flex-end;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid var(--accent-border);
-  border-radius: 8px;
-  background: var(--accent-bg);
-  color: var(--accent-dark);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-@media (max-width: 700px) {
-  .cheatsheet-fit-toggle {
-    display: none;
-  }
-}
-
 /* Fit-to-screen mode: dense printable-sheet layout; font size is chosen in JS so nothing scrolls. */
 .cheatsheet-sheet {
   position: fixed;
@@ -648,38 +629,50 @@ a:hover {
 .cheatsheet-sheet .cheatsheet-controls {
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   min-height: 52px;
   padding-right: 270px;
 }
 
+.cheatsheet-home {
+  flex: none;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .cheatsheet-sheet .cheatsheet-field {
-  flex: 0 1 220px;
+  flex: 1 1 0;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 10px;
+  max-width: 360px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
-.cheatsheet-sheet .cheatsheet-field input,
-.cheatsheet-sheet .cheatsheet-field select,
-.cheatsheet-sheet .cheatsheet-fit-toggle {
-  min-height: 28px;
-  padding: 3px 8px;
-  font-size: 12px;
+.cheatsheet-sheet .cheatsheet-field:first-of-type {
+  flex-grow: 1.4;
 }
 
-.cheatsheet-sheet .cheatsheet-fit-toggle {
-  align-self: center;
+.cheatsheet-sheet .cheatsheet-field input,
+.cheatsheet-sheet .cheatsheet-field select {
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  height: 34px;
+  min-height: 0;
+  padding: 0 10px;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .cheatsheet-sheet .cheatsheet-status {
   position: absolute;
-  top: 18px;
+  top: 24px;
   right: 290px;
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cheatsheet-sheet .cheatsheet-body {
