@@ -21,7 +21,7 @@ const server = await createServer({
 after(() => server.close());
 
 const { courses } = await server.ssrLoadModule("/src/content/index.ts");
-const { courseProgress, overallProgress, isVisited, markVisited, markCourseCompleted, resetProgress } =
+const { courseProgress, overallProgress, isVisited, markVisited, markCourseCompleted, resetProgress, resetCourseProgress } =
   await server.ssrLoadModule("/src/lib/progress.ts");
 const { estimatedReadingMinutes, readingTimeLabel } = await server.ssrLoadModule("/src/lib/readingTime.ts");
 const { renderHome } = await server.ssrLoadModule("/src/pages/home.ts");
@@ -335,5 +335,33 @@ test("home, concept tiles, and concept pages render consistent time and CSP-comp
     else delete globalThis.localStorage;
     if (previousDocument) Object.defineProperty(globalThis, "document", previousDocument);
     else delete globalThis.document;
+  }
+});
+
+test("resetting one concept clears its reads, including legacy markers, and keeps other concepts", () => {
+  const storageKey = "de-crash-course-progress";
+  const merged = courses.find(course => course.id === "transformations-joins-skew");
+  const other = courses.find(course => course.id !== merged.id);
+  const values = new Map([[storageKey, JSON.stringify([
+    "pushdown-and-caching/predicate-partition-pruning",
+    `${merged.id}/${merged.topics[0].id}`,
+    `${other.id}/${other.topics[0].id}`,
+  ])]]);
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: key => values.get(key) ?? null,
+      setItem: (key, value) => { values.set(key, value); },
+      removeItem: key => { values.delete(key); },
+    },
+  });
+  try {
+    resetCourseProgress(merged);
+    assert.equal(courseProgress(merged).visited, 0);
+    assert.equal(isVisited(other.id, other.topics[0].id), true);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, "localStorage", previous);
+    else delete globalThis.localStorage;
   }
 });

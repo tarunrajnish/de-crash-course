@@ -3,7 +3,7 @@ import { el } from "../lib/dom";
 import { icon, TOPIC_ICONS } from "../lib/icons";
 import { routeToPath } from "../lib/router";
 import { breadcrumb } from "../lib/breadcrumb";
-import { courseProgress, isVisited, markCourseCompleted } from "../lib/progress";
+import { courseProgress, isVisited, markCourseCompleted, resetCourseProgress } from "../lib/progress";
 import { readingTimeLabel, READING_TIME_DESCRIPTION } from "../lib/readingTime";
 
 function iconIndexFor(key: string): number {
@@ -72,6 +72,13 @@ export function renderTopicList(courseId: string): HTMLElement {
   completeButton.disabled = visited === total;
   completeButton.hidden = import.meta.env.SSR;
   progressWrap.appendChild(completeButton);
+  const resetButton = el("button", {
+    className: "progress-reset",
+    text: "Reset progress",
+    attrs: { type: "button", "aria-label": `Reset progress for ${course.title}` },
+  });
+  resetButton.hidden = import.meta.env.SSR || visited === 0;
+  progressWrap.appendChild(resetButton);
   const saveError = el("p", {
     className: "progress-save-error",
     text: "Your progress could not be saved. Allow site storage and try again.",
@@ -119,9 +126,22 @@ export function renderTopicList(courseId: string): HTMLElement {
     completeButton.textContent = "Completed";
     completeButton.setAttribute("aria-label", `${course.title} completed`);
     completeButton.disabled = true;
+    resetButton.hidden = false;
     for (const titleRow of topicTitles) {
       if (!titleRow.querySelector(".topic-card-visited")) titleRow.appendChild(readBadge());
     }
+  });
+
+  resetButton.addEventListener("click", () => {
+    if (!window.confirm(`Reset your reading progress for "${course.title}" on this device? This can't be undone.`)) return;
+    try {
+      resetCourseProgress(course);
+    } catch (error) {
+      console.error("Unable to reset concept progress.", error);
+      saveError.hidden = false;
+      return;
+    }
+    window.location.reload();
   });
 
   root.appendChild(list);

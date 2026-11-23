@@ -56,6 +56,20 @@ export function markCourseCompleted(course: Course): void {
   writeVisited(visited);
 }
 
+export function resetCourseProgress(course: Course): void {
+  const visited = readVisited();
+  const canonicalId = canonicalCourseId(course.id);
+  for (const topic of course.topics) {
+    visited.delete(key(canonicalId, topic.id));
+    for (const alias of courseAliases) {
+      if (alias.courseId === canonicalId && alias.topicIds.includes(topic.id)) {
+        visited.delete(key(alias.id, topic.id));
+      }
+    }
+  }
+  writeVisited(visited);
+}
+
 export function isVisited(courseId: string, topicId: string): boolean {
   return hasVisited(readVisited(), courseId, topicId);
 }
