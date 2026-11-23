@@ -38,6 +38,10 @@ export function renderHome(): HTMLElement {
     pointsRow.appendChild(item);
   }
   root.appendChild(pointsRow);
+  root.appendChild(el("p", {
+    className: "home-overview",
+    text: "A short, focused path through the Spark, Delta Lake and Structured Streaming ideas that data engineering interviews and day-to-day work keep returning to. Each concept teaches the reasoning first, then gives you examples to attach and self-tests to check your recall.",
+  }));
 
   root.appendChild(el("div", { className: "section-divider" }));
 

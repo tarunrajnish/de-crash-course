@@ -695,6 +695,14 @@ a:hover {
   color: var(--text);
 }
 
+.home-overview {
+  max-width: 62ch;
+  margin: -16px 0 40px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
 .selling-point--green {
   border-left-color: var(--accent);
 }
@@ -1547,6 +1555,10 @@ a:hover {
   .selling-points {
     flex-direction: column;
     gap: 20px;
+  }
+
+  .home-overview {
+    margin-top: -8px;
   }
 }
 
