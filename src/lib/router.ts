@@ -1,6 +1,7 @@
 export type Route =
   | { name: "home" }
   | { name: "cheatsheet" }
+  | { name: "summary" }
   | { name: "topic-list"; courseId: string }
   | { name: "topic-detail"; courseId: string; topicId: string }
   | { name: "not-found" };
@@ -16,6 +17,7 @@ function parseSegments(path: string): Route {
 
   if (parts.length === 0) return { name: "home" };
   if (parts.length === 1 && parts[0] === "cheatsheet") return { name: "cheatsheet" };
+  if (parts.length === 1 && parts[0] === "summary") return { name: "summary" };
   if (parts[0] === "course" && parts.length === 2) {
     return { name: "topic-list", courseId: parts[1] };
   }
@@ -42,6 +44,8 @@ export function routeToPath(route: Route, base = import.meta.env.BASE_URL): stri
       return base;
     case "cheatsheet":
       return `${base}cheatsheet/`;
+    case "summary":
+      return `${base}summary/`;
     case "topic-list":
       return `${base}course/${encodeURIComponent(route.courseId)}/`;
     case "topic-detail":

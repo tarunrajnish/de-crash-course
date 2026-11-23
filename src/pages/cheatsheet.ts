@@ -1,6 +1,7 @@
 import { cheatsheetGroups, cheatsheetSearchText } from "../content/cheatsheet";
 import { breadcrumb } from "../lib/breadcrumb";
 import { el } from "../lib/dom";
+import { fitSheet as fitSheetToScreen } from "../lib/fitSheet";
 import { renderInlineText } from "../lib/inlineCode";
 import { routeToPath } from "../lib/router";
 import { matchesSearchQuery } from "../lib/search";
@@ -109,26 +110,12 @@ export function renderCheatsheet(): HTMLElement {
     fitSheet();
   }
 
-  const MAX_SHEET_FONT = 16;
-  const MIN_SHEET_FONT = 5.5;
-  // Picks the largest font size at which every column fits on one screen.
-  function fitSheet(): void {
-    if (!body.clientWidth) return;
-    body.style.overflowX = "hidden";
-    let size = MAX_SHEET_FONT;
-    for (; size > MIN_SHEET_FONT; size -= 0.25) {
-      body.style.fontSize = `${size}px`;
-      if (body.scrollWidth <= body.clientWidth + 1) break;
-    }
-    body.style.fontSize = `${size}px`;
-    if (body.scrollWidth > body.clientWidth + 1) body.style.overflowX = "auto";
-  }
+  const fitSheet = () => fitSheetToScreen(body);
 
   input.addEventListener("input", filter);
   category.addEventListener("change", filter);
   const view = document.defaultView;
   if (view) {
-    // The page is not attached yet, so measure after it mounts.
     view.requestAnimationFrame?.(() => fitSheet());
     view.addEventListener("resize", fitSheet);
     view.addEventListener("hashchange", () => {

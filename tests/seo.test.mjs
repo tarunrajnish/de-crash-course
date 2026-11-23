@@ -21,7 +21,7 @@ const { buildSearchIndex } = await server.ssrLoadModule("/src/lib/search.ts");
 const { renderPage } = await server.ssrLoadModule("/src/pages/index.ts");
 const { cheatsheetGroups } = await server.ssrLoadModule("/src/content/cheatsheet.ts");
 const home = new URL(pageMetadata({ name: "home" }).canonical);
-const routes = [{ name: "home" }];
+const routes = [{ name: "home" }, { name: "summary" }];
 for (const course of courses) {
   routes.push({ name: "topic-list", courseId: course.id });
   for (const topic of course.topics) {
@@ -380,4 +380,16 @@ test("sitemap lists exactly the canonical pages; 404 is excluded and noindexed",
   const robots = await readFile("dist/robots.txt", "utf8");
   assert.ok(robots.includes(`Sitemap: ${home.href}sitemap.xml`));
   await access("dist/.nojekyll");
+});
+
+test("the one-page summary covers every topic set and links to each concept", async () => {
+  const { summaryCards } = await server.ssrLoadModule("/src/content/summary.ts");
+  assert.deepEqual(summaryCards.map(card => card.courseId), courses.map(course => course.id));
+  assert.ok(summaryCards.every(card => card.points.length >= 3 && card.points.length <= 4));
+  const html = await readFile("dist/summary/index.html", "utf8");
+  const { document } = parseHTML(html);
+  assert.equal(document.querySelectorAll(".summary-card").length, courses.length);
+  for (const course of courses) {
+    assert.ok(document.querySelector(`a[href$="/course/${course.id}/"]`), course.id);
+  }
 });

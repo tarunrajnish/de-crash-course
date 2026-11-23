@@ -17,6 +17,9 @@ export function pageMetadata(route: Route) {
       title = `SQL, Python & data engineering cheatsheet | ${SITE_NAME}`;
       description = "Search quick SQL, MySQL, Python, and data engineering tips, common mistakes, code examples, and interview memory aids.";
     }
+  } else if (route.name === "summary") {
+    title = `One-page summary | ${SITE_NAME}`;
+    description = "A one-page summary of every topic set: Spark, Delta Lake, modeling, orchestration, data quality, AI pipelines, and production engineering.";
   } else if (route.name === "topic-list") {
     const course = findCourse(route.courseId);
     found = Boolean(course);

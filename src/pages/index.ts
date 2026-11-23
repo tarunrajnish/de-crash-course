@@ -6,6 +6,7 @@ import { renderHome } from "./home";
 import { renderTopicList } from "./topicList";
 import { renderTopicDetail } from "./topicDetail";
 import { renderCheatsheet } from "./cheatsheet";
+import { renderSummary } from "./summary";
 
 export function renderPage(route: Route): HTMLElement {
   if (pageMetadata(route).found) {
@@ -14,6 +15,7 @@ export function renderPage(route: Route): HTMLElement {
       case "cheatsheet":
         if (import.meta.env.LOCAL_CHEATSHEET) return renderCheatsheet();
         break;
+      case "summary": return renderSummary();
       case "topic-list": return renderTopicList(route.courseId);
       case "topic-detail": return renderTopicDetail(route.courseId, route.topicId);
     }

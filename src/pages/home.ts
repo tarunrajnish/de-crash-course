@@ -88,6 +88,11 @@ export function renderHome(): HTMLElement {
   gridHeading.appendChild(
     el("p", { className: "grid-heading-subtitle", text: `${courses.length} topic sets, same format: taught concept, worked example, self-test.` }),
   );
+  gridHeading.appendChild(el("a", {
+    className: "grid-heading-link",
+    text: "One-page summary \u2192",
+    attrs: { href: routeToPath({ name: "summary" }) },
+  }));
   root.appendChild(gridHeading);
 
   const grid = el("div", { className: "tile-grid" });

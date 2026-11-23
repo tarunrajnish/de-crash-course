@@ -18,7 +18,7 @@ try {
   const { applyPageMetadata, pageMetadata } = await server.ssrLoadModule("/src/lib/seo.ts");
   const output = resolve(server.config.root, server.config.build.outDir);
   const template = await readFile(resolve(output, "index.html"), "utf8");
-  const routes = [{ name: "home" }];
+  const routes = [{ name: "home" }, { name: "summary" }];
   for (const course of courses) {
     routes.push({ name: "topic-list", courseId: course.id });
     for (const topic of course.topics) {
