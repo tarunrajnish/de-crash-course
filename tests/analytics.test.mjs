@@ -21,8 +21,9 @@ const { initAnalytics } = await server.ssrLoadModule("/src/lib/analytics.ts");
 const key = "de-crash-course-analytics-consent";
 const measurementId = "G-Y4ZYTKJ10V";
 const disabled = `ga-disable-${measurementId}`;
+const site = new URL(JSON.parse(server.config.define["import.meta.env.VITE_SITE_URL"]));
 
-function installDOM({ saved = null, failRead = false, failWrite = false, origin = "https://tarunrajnish.github.io" } = {}) {
+function installDOM({ saved = null, failRead = false, failWrite = false, origin = site.origin } = {}) {
   const { window, document } = parseHTML(`<html><head></head><body>
     <button id="analytics-preferences" hidden>Privacy &amp; analytics</button>
     <p id="analytics-status" hidden></p>
@@ -32,7 +33,7 @@ function installDOM({ saved = null, failRead = false, failWrite = false, origin 
   const values = new Map(saved ? [[key, saved]] : []);
   let reloads = 0;
   const location = {
-    origin, hostname: new URL(origin).hostname, pathname: "/de-crash-course/",
+    origin, hostname: new URL(origin).hostname, pathname: site.pathname,
     reload: () => { reloads++; },
   };
   const storage = {
@@ -117,7 +118,7 @@ test("accepting loads the direct GA4 tag once with analytics granted and adverti
     assert.equal(config[1], measurementId);
     assert.equal(config[2].allow_google_signals, false);
     assert.equal(config[2].allow_ad_personalization_signals, false);
-    assert.equal(config[2].cookie_path, "/de-crash-course/");
+    assert.equal(config[2].cookie_path, site.pathname);
     assert.equal(config[2].cookie_prefix, "de_crash_course");
     assert.equal(config[2].cookie_domain, "none");
     dom.document.querySelector("#analytics-preferences").click();
