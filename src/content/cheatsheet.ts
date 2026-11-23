@@ -349,6 +349,22 @@ ELT: Extract -> Load target -> Transform`,
         ],
       },
       {
+        id: "de-fact-table-grain",
+        title: "Dimensional modeling: keep one grain per fact table",
+        paragraphs: [
+          "Do not mix grains in one fact table. When a parent line item and its exploded child components differ in grain, model separate facts (for example `fact_line_item` and `fact_line_item_component`) linked by the parent key, or use a bridge or allocation fact when a shared parent value must be spread across children.",
+          "Summing a parent measure after joining to its children double counts. Keep additive measures at their natural grain and allocate explicitly when children must roll up. Rows with the same grain and consistent measures belong in one fact table.",
+        ],
+      },
+      {
+        id: "de-flatten-normalize-allocate",
+        title: "Terms: flatten, normalize, allocate",
+        paragraphs: [
+          "Breaking nested or array JSON into rows is called flattening, unnesting, or exploding: Spark `explode()`, SQL `UNNEST` or `LATERAL FLATTEN`, depending on the engine.",
+          "Normalization splits data into related tables. Allocation distributes a parent measure across its children.",
+        ],
+      },
+      {
         id: "de-schema-evolution",
         title: "Schema evolution: reader direction matters",
         paragraphs: [
