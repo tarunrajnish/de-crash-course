@@ -140,11 +140,11 @@ test("global search finds tip explanations and code and navigates to the matchin
   for (const [query, id] of [
     ["mysql median row_number", "sql-mysql-median"],
     ["python descriptor", "python-list-instance"],
-    ["debEzium kafka", "de-cdc-use-cases"],
-    ["size economics", "de-nonfunctional-scale"],
-    ["vacuum dry run", "de-delta-vacuum"],
-    ["version as of", "de-delta-time-travel-restore"],
-    ["liquid clustering keys", "de-databricks-liquid-clustering"],
+    ["debEzium kafka", "de-cdc-batch-streaming"],
+    ["size economics", "de-pipeline-requirements"],
+    ["vacuum dry run", "de-delta-retention"],
+    ["version as of", "de-delta-retention"],
+    ["liquid clustering keys", "de-delta-layout"],
     ["cdf downstream", "de-delta-change-data-feed"],
   ]) {
     const results = index.filter(entry => matchesSearchQuery(entry.haystack, query));
@@ -167,7 +167,7 @@ test("global search finds tip explanations and code and navigates to the matchin
     input.dispatchEvent(new dom.window.Event("input"));
     const result = document.querySelector(".search-result");
     assert.match(result.textContent, /median/);
-    assert.match(result.textContent, /Cheatsheet \/ SQL/);
+    assert.match(result.textContent, /Cheatsheet \/ MySQL/);
     result.click();
     assert.equal(destination, `${routeToPath({ name: "cheatsheet" })}#sql-mysql-median`);
     navigate({ name: "home" });
