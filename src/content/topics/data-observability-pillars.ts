@@ -44,7 +44,7 @@ export const dataObservabilityPillars: Topic = {
         "A team that only monitors job success rates will discover a six-month-old null-rate regression the same day a customer complains about it, not the day it started.",
     },
   ],
-  videos: [{ title: "What is Data Observability?", url: "https://www.youtube.com/watch?v=Gg9SpB8rbqE" }],
+  videos: [{ title: "Data Observability with Barr Moses (DataTalks.Club, five pillars at 14:38)", url: "https://www.youtube.com/watch?v=TrMG1SOqZkQ&t=878s" }],
   example: {
     title: "A successful run can still change the meaning of money",
     description: "An upstream producer switches from dollars to cents without changing the amount column's type.",
