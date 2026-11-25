@@ -56,15 +56,14 @@ export function markCourseCompleted(course: Course): void {
   writeVisited(visited);
 }
 
-export function resetCourseProgress(course: Course): void {
+export function resetTopicProgress(courseId: string, topicId: string): void {
+  if (import.meta.env.SSR) return;
   const visited = readVisited();
-  const canonicalId = canonicalCourseId(course.id);
-  for (const topic of course.topics) {
-    visited.delete(key(canonicalId, topic.id));
-    for (const alias of courseAliases) {
-      if (alias.courseId === canonicalId && alias.topicIds.includes(topic.id)) {
-        visited.delete(key(alias.id, topic.id));
-      }
+  const canonicalId = canonicalCourseId(courseId);
+  visited.delete(key(canonicalId, topicId));
+  for (const alias of courseAliases) {
+    if (alias.courseId === canonicalId && alias.topicIds.includes(topicId)) {
+      visited.delete(key(alias.id, topicId));
     }
   }
   writeVisited(visited);

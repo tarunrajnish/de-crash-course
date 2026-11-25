@@ -21,7 +21,7 @@ const server = await createServer({
 after(() => server.close());
 
 const { courses } = await server.ssrLoadModule("/src/content/index.ts");
-const { courseProgress, overallProgress, isVisited, markVisited, markCourseCompleted, resetProgress, resetCourseProgress } =
+const { courseProgress, overallProgress, isVisited, markVisited, markCourseCompleted, resetProgress, resetTopicProgress } =
   await server.ssrLoadModule("/src/lib/progress.ts");
 const { estimatedReadingMinutes, readingTimeLabel } = await server.ssrLoadModule("/src/lib/readingTime.ts");
 const { renderHome } = await server.ssrLoadModule("/src/pages/home.ts");
@@ -125,7 +125,7 @@ test("reading estimates round at 200-word boundaries and count all written learn
   assert.equal(estimatedReadingMinutes(illustrated), 1, "Alternative image text is not counted again");
 });
 
-test("remaining time subtracts each opened topic once, preserves totals, and resets globally and per concept", () => {
+test("remaining time subtracts each opened topic once, preserves totals, and resets globally", () => {
   const values = new Map();
   const previous = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
   Object.defineProperty(globalThis, "localStorage", {
@@ -217,6 +217,7 @@ test("concept completion updates the page immediately, persists on return, and r
   const values = new Map();
   const previousStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
   const previousDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
   const previousError = console.error;
   const errors = [];
   let blocked = false;
@@ -235,6 +236,11 @@ test("concept completion updates the page immediately, persists on return, and r
     configurable: true,
     value: parseHTML("<html><body></body></html>").document,
   });
+  let confirmed = false;
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: { confirm: () => confirmed, Event, dispatchEvent: () => true },
+  });
   console.error = (...args) => errors.push(args);
   try {
     const course = courses[0];
@@ -248,6 +254,11 @@ test("concept completion updates the page immediately, persists on return, and r
     assert.equal(button.disabled, false);
     assert.equal(button.textContent, "Mark as completed");
     assert.equal(button.closest("a"), null, "Completion must not be nested in a navigation link");
+    assert.equal(page.querySelector(".progress-meter .progress-reset"), null);
+    const resetButton = page.querySelector(".topic-card-reset");
+    assert.equal(resetButton.hidden, false);
+    assert.equal(resetButton.closest("a"), null, "Reset must not be nested in a navigation link");
+    assert.equal([...page.querySelectorAll(".topic-card-reset")].filter(button => !button.hidden).length, 1);
 
     blocked = true;
     button.click();
@@ -277,6 +288,31 @@ test("concept completion updates the page immediately, persists on return, and r
     assert.equal(home.querySelector(".progress-complete"), null, "Completion controls belong only on concept pages");
     assert.equal(home.querySelector(".progress-meter--overall progress").getAttribute("value"), String(course.topics.length));
     assert.equal(home.querySelector(".tile progress").getAttribute("value"), String(course.topics.length));
+    const other = courses[1];
+    markVisited(other.id, other.topics[0].id);
+    resetButton.click();
+    assert.equal(courseProgress(course).visited, course.topics.length, "Cancellation keeps all progress");
+    confirmed = true;
+    blocked = true;
+    resetButton.click();
+    assert.equal(page.querySelector(".progress-save-error").hidden, false);
+    assert.equal(page.querySelectorAll(".topic-card-visited").length, course.topics.length);
+    assert.equal(resetButton.hidden, false);
+    blocked = false;
+    resetButton.click();
+    assert.equal(page.querySelector(".progress-save-error").hidden, true);
+    assert.equal(resetButton.hidden, true);
+    assert.equal(button.disabled, false);
+    assert.equal(button.textContent, "Mark as completed");
+    assert.equal(meter.getAttribute("value"), String(course.topics.length - 1));
+    assert.equal(page.querySelector(".progress-meter-label").textContent, `${course.topics.length - 1} / ${course.topics.length} read`);
+    assert.equal(page.querySelectorAll(".topic-card-visited").length, course.topics.length - 1);
+    assert.equal(estimate.textContent, readingTimeLabel(estimatedReadingMinutes(course.topics[0]), courseProgress(course).totalMinutes));
+    assert.equal(courseProgress(other).visited, 1);
+    assert.equal(isVisited(course.id, course.topics[1].id), true);
+    assert.equal(renderTopicList(course.id).querySelector(".topic-card-reset").hidden, true, "Reset persists on return");
+    button.click();
+    assert.equal(resetButton.hidden, false, "Bulk completion enables topic resets immediately");
     resetProgress();
     const reset = renderTopicList(course.id);
     assert.equal(reset.querySelector(".progress-complete").disabled, false);
@@ -287,6 +323,8 @@ test("concept completion updates the page immediately, persists on return, and r
     else delete globalThis.localStorage;
     if (previousDocument) Object.defineProperty(globalThis, "document", previousDocument);
     else delete globalThis.document;
+    if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
+    else delete globalThis.window;
   }
 });
 
@@ -338,12 +376,14 @@ test("home, concept tiles, and concept pages render consistent time and CSP-comp
   }
 });
 
-test("resetting one concept clears its reads, including legacy markers, and keeps other concepts", () => {
+test("resetting one topic clears canonical and legacy markers while keeping other topics and concepts", () => {
   const storageKey = "de-crash-course-progress";
   const merged = courses.find(course => course.id === "transformations-joins-skew");
   const other = courses.find(course => course.id !== merged.id);
   const values = new Map([[storageKey, JSON.stringify([
     "pushdown-and-caching/predicate-partition-pruning",
+    `${merged.id}/predicate-partition-pruning`,
+    "pushdown-and-caching/caching-vs-checkpointing",
     `${merged.id}/${merged.topics[0].id}`,
     `${other.id}/${other.topics[0].id}`,
   ])]]);
@@ -357,8 +397,12 @@ test("resetting one concept clears its reads, including legacy markers, and keep
     },
   });
   try {
-    resetCourseProgress(merged);
-    assert.equal(courseProgress(merged).visited, 0);
+    resetTopicProgress("pushdown-and-caching", "predicate-partition-pruning");
+    assert.equal(isVisited(merged.id, "predicate-partition-pruning"), false);
+    assert.equal(isVisited("pushdown-and-caching", "predicate-partition-pruning"), false);
+    assert.equal(courseProgress(merged).visited, 2);
+    assert.equal(isVisited(merged.id, merged.topics[0].id), true);
+    assert.equal(isVisited(merged.id, "caching-vs-checkpointing"), true);
     assert.equal(isVisited(other.id, other.topics[0].id), true);
   } finally {
     if (previous) Object.defineProperty(globalThis, "localStorage", previous);

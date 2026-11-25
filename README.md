@@ -21,6 +21,9 @@ all of its topics as read in one action, updates the count and remaining time,
 and preserves progress in other concepts. The button becomes **Completed**
 once every topic is marked as read. This control requires JavaScript; storage
 failures show an error without claiming completion.
+Each read topic card has a **Reset progress** button with confirmation. It
+resets only that topic, updates the count and remaining time immediately,
+and preserves all other topics. The homepage retains its global reset.
 Remaining time returns to the total when progress is reset. Estimates and
 progress stay device-local; they do not measure time spent reading.
 

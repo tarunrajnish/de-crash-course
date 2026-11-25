@@ -154,7 +154,7 @@ test("every page ships full HTML, unique metadata, and working internal links wi
     }
     if (route.name === "topic-list") {
       const course = courses.find(c => c.id === route.courseId);
-      assert.equal(document.querySelectorAll("a.topic-card").length, course.topics.length);
+      assert.equal(document.querySelectorAll(".topic-card a.topic-card-link").length, course.topics.length);
     }
     if (route.name === "topic-detail") {
       const topic = courses.find(c => c.id === route.courseId).topics.find(t => t.id === route.topicId);

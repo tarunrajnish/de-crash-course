@@ -38,9 +38,11 @@ function installDOM() {
   };
 }
 
-test("the local cheatsheet preserves its route, footer link, grouped tips, code, and anchors", async () => {
+test("development links to both the website summary and the personal cheatsheet", async () => {
   const html = await server.transformIndexHtml("/de-crash-course/", await readFile("index.html", "utf8"));
-  assert.ok(parseHTML(html).document.querySelector("footer #local-cheatsheet"));
+  const footer = parseHTML(html).document.querySelector("footer");
+  assert.ok(footer.querySelector('#local-cheatsheet[href$="/cheatsheet/"]'));
+  assert.ok(footer.querySelector('a[href$="/summary/"]'));
   assert.equal(
     parseHTML(html).document.querySelector("#venmo-support img").getAttribute("src"),
     `${server.config.base}assets/venmo-v.svg`,

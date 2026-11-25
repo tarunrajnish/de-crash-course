@@ -85,9 +85,6 @@ export function renderHome(): HTMLElement {
   gridTitle.appendChild(icon("bolt", "grid-heading-icon"));
   gridTitle.appendChild(document.createTextNode("Choose a topic set"));
   gridHeading.appendChild(gridTitle);
-  gridHeading.appendChild(
-    el("p", { className: "grid-heading-subtitle", text: `${courses.length} topic sets, same format: taught concept, worked example, self-test.` }),
-  );
   gridHeading.appendChild(el("a", {
     className: "grid-heading-link",
     text: "One-page summary \u2192",

@@ -3,7 +3,7 @@ import { el } from "../lib/dom";
 import { icon, TOPIC_ICONS } from "../lib/icons";
 import { routeToPath } from "../lib/router";
 import { breadcrumb } from "../lib/breadcrumb";
-import { courseProgress, isVisited, markCourseCompleted, resetCourseProgress } from "../lib/progress";
+import { courseProgress, isVisited, markCourseCompleted, resetTopicProgress } from "../lib/progress";
 import { readingTimeLabel, READING_TIME_DESCRIPTION } from "../lib/readingTime";
 
 function iconIndexFor(key: string): number {
@@ -72,13 +72,6 @@ export function renderTopicList(courseId: string): HTMLElement {
   completeButton.disabled = visited === total;
   completeButton.hidden = import.meta.env.SSR;
   progressWrap.appendChild(completeButton);
-  const resetButton = el("button", {
-    className: "progress-reset",
-    text: "Reset progress",
-    attrs: { type: "button", "aria-label": `Reset progress for ${course.title}` },
-  });
-  resetButton.hidden = import.meta.env.SSR || visited === 0;
-  progressWrap.appendChild(resetButton);
   const saveError = el("p", {
     className: "progress-save-error",
     text: "Your progress could not be saved. Allow site storage and try again.",
@@ -89,14 +82,15 @@ export function renderTopicList(courseId: string): HTMLElement {
   root.appendChild(progressWrap);
 
   const list = el("div", { className: "topic-list" });
-  const topicTitles: HTMLElement[] = [];
+  const topicControls: { topicId: string; titleRow: HTMLElement; resetButton: HTMLButtonElement }[] = [];
 
   course.topics.forEach((topic, i) => {
-    const card = el("a", {
-      className: "topic-card",
+    const card = el("article", { className: "topic-card" });
+    const link = el("a", {
+      className: "topic-card-link",
       attrs: { href: routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id }) },
     });
-    card.appendChild(el("span", { className: "topic-index", text: String(i + 1).padStart(2, "0") }));
+    link.appendChild(el("span", { className: "topic-index", text: String(i + 1).padStart(2, "0") }));
     const body = el("div", { className: "topic-card-body" });
     const titleRow = el("h3", { className: "topic-card-title" });
     titleRow.appendChild(icon(TOPIC_ICONS[iconIndexFor(course.id + topic.id)], "topic-card-icon"));
@@ -104,12 +98,50 @@ export function renderTopicList(courseId: string): HTMLElement {
     if (isVisited(course.id, topic.id)) {
       titleRow.appendChild(readBadge());
     }
-    topicTitles.push(titleRow);
     body.appendChild(titleRow);
     body.appendChild(el("p", { className: "topic-card-description", text: topic.shortDescription }));
-    card.appendChild(body);
+    link.appendChild(body);
+    card.appendChild(link);
+    const resetButton = el("button", {
+      className: "progress-reset topic-card-reset",
+      text: "Reset progress",
+      attrs: { type: "button", "aria-label": `Reset progress for ${topic.title}` },
+    });
+    resetButton.hidden = import.meta.env.SSR || !isVisited(course.id, topic.id);
+    resetButton.addEventListener("click", () => {
+      if (!window.confirm(`Reset your reading progress for "${topic.title}" on this device? This can't be undone.`)) return;
+      try {
+        resetTopicProgress(course.id, topic.id);
+      } catch (error) {
+        console.error("Unable to reset topic progress.", error);
+        saveError.hidden = false;
+        return;
+      }
+      updateProgress();
+    });
+    topicControls.push({ topicId: topic.id, titleRow, resetButton });
+    card.appendChild(resetButton);
     list.appendChild(card);
   });
+
+  const updateProgress = (): void => {
+    const current = courseProgress(course);
+    saveError.hidden = true;
+    progressBar.setAttribute("value", String(current.visited));
+    progressLabel.textContent = `${current.visited} / ${total} read`;
+    readingEstimate.textContent = readingTimeLabel(current.remainingMinutes, current.totalMinutes);
+    const completed = current.visited === total;
+    completeButton.textContent = completed ? "Completed" : "Mark as completed";
+    completeButton.setAttribute("aria-label", completed ? `${course.title} completed` : `Mark ${course.title} as completed`);
+    completeButton.disabled = completed;
+    for (const { topicId, titleRow, resetButton } of topicControls) {
+      const read = isVisited(course.id, topicId);
+      resetButton.hidden = !read;
+      const badge = titleRow.querySelector(".topic-card-visited");
+      if (read && !badge) titleRow.appendChild(readBadge());
+      else if (!read) badge?.remove();
+    };
+  }
 
   completeButton.addEventListener("click", () => {
     try {
@@ -119,29 +151,7 @@ export function renderTopicList(courseId: string): HTMLElement {
       saveError.hidden = false;
       return;
     }
-    saveError.hidden = true;
-    progressBar.setAttribute("value", String(total));
-    progressLabel.textContent = `${total} / ${total} read`;
-    readingEstimate.textContent = readingTimeLabel(0, progress.totalMinutes);
-    completeButton.textContent = "Completed";
-    completeButton.setAttribute("aria-label", `${course.title} completed`);
-    completeButton.disabled = true;
-    resetButton.hidden = false;
-    for (const titleRow of topicTitles) {
-      if (!titleRow.querySelector(".topic-card-visited")) titleRow.appendChild(readBadge());
-    }
-  });
-
-  resetButton.addEventListener("click", () => {
-    if (!window.confirm(`Reset your reading progress for "${course.title}" on this device? This can't be undone.`)) return;
-    try {
-      resetCourseProgress(course);
-    } catch (error) {
-      console.error("Unable to reset concept progress.", error);
-      saveError.hidden = false;
-      return;
-    }
-    window.location.reload();
+    updateProgress();
   });
 
   root.appendChild(list);

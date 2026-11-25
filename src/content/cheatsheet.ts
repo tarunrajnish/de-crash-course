@@ -277,6 +277,13 @@ is_square = root * root == n`,
 ELT: Extract -> Load target -> Transform`,
       },
       {
+        id: "de-dbt",
+        title: "dbt: warehouse transformations",
+        paragraphs: [
+          "dbt (data build tool) handles the T in ELT: SQL models define SELECT queries materialized as views, tables, or incremental models; `ref()` declares model dependencies and resolves relation names. dbt compiles and coordinates dependency-ordered builds, data tests, documentation, and lineage in Git-based workflows; database compute executes the SQL. Ingestion is usually separate; Airflow can orchestrate the wider pipeline and trigger dbt.",
+        ],
+      },
+      {
         id: "de-lake-warehouse-lakehouse",
         title: "Lake vs. warehouse vs. lakehouse",
         paragraphs: [
@@ -322,6 +329,13 @@ df = spark.read.option("header", True).csv("data.csv")`,
         paragraphs: [
           "`pyspark.ml` provides DataFrame-based APIs and distributed algorithms such as logistic regression, random forests, and k-means. Features occupy one numeric vector column assembled with `VectorAssembler`; encode categoricals with `StringIndexer` and `OneHotEncoder` as the algorithm needs.",
           "`Transformer.transform()` returns a DataFrame; `Estimator.fit()` learns a model that is a Transformer. `Pipeline` chains stages and `Pipeline.fit()` returns a `PipelineModel`. Fit learned preprocessing on training data only, then transform test data. Use task-appropriate metrics, and chronological or group splits when random splits would leak information.",
+        ],
+      },
+      {
+        id: "de-rag",
+        title: "RAG: retrieval-augmented generation",
+        paragraphs: [
+          "RAG retrieves external documents or data as LLM context, grounding answers in private or current information without retraining model weights; retrieval and generation errors remain possible. Documents are commonly chunked and embedded as numeric vectors in an index; an embedded question retrieves similar chunks, with keyword or hybrid search also available.",
         ],
       },
       {
