@@ -1,4 +1,5 @@
 import { courses } from "../content";
+import { DONATIONS_ENABLED } from "../features";
 import { el } from "./dom";
 import { icon } from "./icons";
 import { overallProgress, PROGRESS_CHANGED_EVENT } from "./progress";
@@ -20,7 +21,7 @@ function readMilestones(): Set<number> {
 }
 
 export function initDonationPrompts(testMode = DONATION_TEST_MODE): void {
-  if (import.meta.env.SSR || document.getElementById("donation-popup")) return;
+  if (!DONATIONS_ENABLED || import.meta.env.SSR || document.getElementById("donation-popup")) return;
   const footerLink = document.querySelector<HTMLAnchorElement>("#venmo-support");
   const statusControl = document.getElementById("donation-status");
   if (!footerLink || !statusControl) throw new Error("Donation footer controls are missing.");

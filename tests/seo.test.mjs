@@ -188,26 +188,11 @@ test("static lesson diagrams ship accessible images and captions without enablin
   assert.equal(document.querySelector(".animation-figure"), null);
 });
 
-test("every static route includes a safe footer support link without embedding payment resources", async () => {
+test("every static route excludes disabled Venmo support and keeps the feedback link", async () => {
   const pages = (await readdir("dist", { recursive: true })).filter(file => file.endsWith(".html"));
   for (const page of pages) {
     const { document } = parseHTML(await readFile(resolve("dist", page), "utf8"));
-    const link = document.querySelector("footer #venmo-support");
-    assert.ok(link, page);
-    assert.equal(link.getAttribute("href"), "https://venmo.com/tarunrajnish", page);
-    assert.equal(link.getAttribute("target"), "_blank", page);
-    assert.equal(link.getAttribute("rel"), "noopener noreferrer", page);
-    assert.equal(link.querySelector(".venmo-logo").getAttribute("aria-hidden"), "true", page);
-    const logos = [...link.querySelectorAll(".venmo-logo img")];
-    assert.equal(logos.length, 1, page);
-    for (const logo of logos) {
-      assert.equal(logo.getAttribute("alt"), "", page);
-      const url = new URL(logo.getAttribute("src"), home);
-      assert.equal(url.origin, home.origin, page);
-      assert.equal(url.pathname, `${home.pathname}assets/venmo-v.svg`, page);
-      await access(outputFile(url.pathname));
-    }
-    assert.equal(document.querySelector('script[src*="venmo"], iframe[src*="venmo"]'), null, page);
+    assert.equal(document.querySelector('#venmo-support, #donation-status, .venmo-logo, a[href*="venmo.com"], img[src*="venmo"], script[src*="venmo"], iframe[src*="venmo"]'), null, page);
     const feedback = document.querySelector('footer a[href="mailto:tarun.rajnish@gmail.com"]');
     assert.equal(feedback?.textContent, "tarun.rajnish@gmail.com", page);
   }

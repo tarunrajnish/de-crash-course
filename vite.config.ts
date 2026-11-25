@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
+import { DONATIONS_ENABLED } from "./src/features.ts";
 
 export default defineConfig(({ command, mode }) => {
   const localCheatsheet = command === "serve" && mode !== "production";
@@ -18,7 +19,9 @@ export default defineConfig(({ command, mode }) => {
     plugins: [{
       name: "local-cheatsheet",
       transformIndexHtml(html) {
-        return localCheatsheet ? html : html.replace(/\s*<a[^>]*id="local-cheatsheet"[^>]*>Cheatsheet<\/a>/, "");
+        const page = html.replace(/<!-- donations:start -->\s*([\s\S]*?)\s*<!-- donations:end -->/g,
+          DONATIONS_ENABLED ? "$1" : "");
+        return localCheatsheet ? page : page.replace(/\s*<a[^>]*id="local-cheatsheet"[^>]*>Cheatsheet<\/a>/, "");
       },
     }],
   };

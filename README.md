@@ -40,7 +40,13 @@ For feedback and suggestions, the footer links to `tarun.rajnish@gmail.com`
 using `mailto:`. Clicking opens the reader's email app; the site does not
 submit or store feedback.
 
-The footer links directly to `https://venmo.com/tarunrajnish`. A small,
+Venmo support is currently disabled in development and production. Set
+`DONATIONS_ENABLED = true` in `src/features.ts` and restart the dev server or
+rebuild and deploy to restore both the footer link and milestone popups.
+While disabled, the app does not read or write donation milestone history;
+existing history is preserved for re-enabling.
+
+When enabled, the footer links directly to `https://venmo.com/tarunrajnish`. A small,
 dismissible popup offers the same optional support link without payment forms,
 suggested amounts, or automatic focus changes. It waits while search or
 analytics preferences are open.

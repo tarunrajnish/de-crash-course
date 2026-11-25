@@ -3,21 +3,27 @@ import assert from "node:assert/strict";
 import { createServer } from "vite";
 import { parseHTML } from "linkedom";
 
-const server = await createServer({
-  mode: "production",
-  server: { middlewareMode: true, hmr: false, ws: false },
-  appType: "custom",
-  logLevel: "error",
-  plugins: [{
-    name: "test-browser-donations",
-    enforce: "pre",
-    transform(code, id) {
-      if (id.endsWith("/src/lib/donations.ts") || id.endsWith("/src/lib/progress.ts")) {
-        return code.replaceAll("import.meta.env.SSR", "false");
-      }
-    },
-  }],
-});
+function createDonationServer(enabled) {
+  return createServer({
+    mode: "production",
+    server: { middlewareMode: true, hmr: false, ws: false },
+    appType: "custom",
+    logLevel: "error",
+    plugins: [{
+      name: "test-browser-donations",
+      enforce: "pre",
+      transform(code, id) {
+        if (enabled && id.endsWith("/src/features.ts")) {
+          return code.replace("DONATIONS_ENABLED = false", "DONATIONS_ENABLED = true");
+        }
+        if (id.endsWith("/src/lib/donations.ts") || id.endsWith("/src/lib/progress.ts")) {
+          return code.replaceAll("import.meta.env.SSR", "false");
+        }
+      },
+    }],
+  });
+}
+const server = await createDonationServer(true);
 after(() => server.close());
 const { courses } = await server.ssrLoadModule("/src/content/index.ts");
 const { initDonationPrompts } = await server.ssrLoadModule("/src/lib/donations.ts");
@@ -73,6 +79,28 @@ function installDOM({ count, shown, values = new Map(), consentOpen = false, sea
     },
   };
 }
+
+test("disabled support creates no popup or storage changes, even in preview mode without footer controls", async () => {
+  const disabledServer = await createDonationServer(false);
+  try {
+    const { initDonationPrompts: initDisabled } = await disabledServer.ssrLoadModule("/src/lib/donations.ts");
+    const dom = installDOM({ count: markers.length, shown: [25], failRead: true, failWrite: true });
+    try {
+      const before = new Map(dom.values);
+      dom.document.querySelector("footer").remove();
+      initDisabled();
+      initDisabled(true);
+      dom.window.dispatchEvent(new dom.window.Event("storage"));
+      dom.flushObservers();
+      assert.equal(dom.popup(), null);
+      assert.deepEqual(dom.values, before, "Disabling must preserve progress and milestone history");
+    } finally {
+      dom.restore();
+    }
+  } finally {
+    await disabledServer.close();
+  }
+});
 
 test("normal reminders use exact overall thresholds at 25, 50, 75, and 100 percent", () => {
   for (const milestone of [25, 50, 75, 100]) {

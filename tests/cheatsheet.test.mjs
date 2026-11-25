@@ -43,11 +43,8 @@ test("development links to both the website summary and the personal cheatsheet"
   const footer = parseHTML(html).document.querySelector("footer");
   assert.ok(footer.querySelector('#local-cheatsheet[href$="/cheatsheet/"]'));
   assert.ok(footer.querySelector('a[href$="/summary/"]'));
-  assert.equal(
-    parseHTML(html).document.querySelector("#venmo-support img").getAttribute("src"),
-    `${server.config.base}assets/venmo-v.svg`,
-    "Development must add the deployment base exactly once",
-  );
+  assert.equal(footer.querySelector("#venmo-support"), null);
+  assert.equal(footer.querySelector("#donation-status"), null);
   assert.equal(pageMetadata({ name: "cheatsheet" }).found, true);
   const dom = installDOM();
   try {
