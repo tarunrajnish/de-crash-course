@@ -18,7 +18,7 @@ try {
   const { applyPageMetadata, pageMetadata } = await server.ssrLoadModule("/src/lib/seo.ts");
   const output = resolve(server.config.root, server.config.build.outDir);
   const template = await readFile(resolve(output, "index.html"), "utf8");
-  const routes = [{ name: "home" }, { name: "summary" }];
+  const routes = [{ name: "home" }, { name: "about" }, { name: "summary" }];
   for (const course of courses) {
     routes.push({ name: "topic-list", courseId: course.id });
     for (const topic of course.topics) {
@@ -71,6 +71,36 @@ try {
     "\n</urlset>\n");
   const site = pageMetadata({ name: "home" }).canonical;
   await writeFile(resolve(output, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}sitemap.xml\n`);
+  const about = routeToPath({ name: "about" }, server.config.base);
+  const summary = routeToPath({ name: "summary" }, server.config.base);
+  const llms = [
+    "# Data Engineering Crash Course",
+    "",
+    "> A free, independent study resource by Tarun Rajnish covering data engineering concepts, with explanations, examples, and self-tests. Formal per-topic technical review dates are not currently recorded.",
+    "",
+    "## Start here",
+    "",
+    `- [Homepage](${pageMetadata({ name: "home" }).canonical}): Browse all topic sets.`,
+    `- [One-page summary](${new URL(summary, site).href}): Review key concepts from every topic set.`,
+    `- [About and editorial status](${new URL(about, site).href}): Author, scope, and review-date disclosure.`,
+    "",
+    "## Topic sets",
+    "",
+    ...courses.flatMap(course => [
+      `### [${course.title}](${new URL(routeToPath({ name: "topic-list", courseId: course.id }, server.config.base), site).href})`,
+      "",
+      course.shortDescription,
+      "",
+      ...course.topics.map(topic =>
+        `- [${topic.title}](${new URL(routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id }, server.config.base), site).href}): ${topic.shortDescription}`),
+      "",
+    ]),
+    "## Complete URL list",
+    "",
+    `See the [XML sitemap](${new URL("sitemap.xml", site).href}) for all canonical pages.`,
+    "",
+  ].join("\n");
+  await writeFile(resolve(output, "llms.txt"), llms);
   await writeFile(resolve(output, ".nojekyll"), "");
   console.log(`Pre-rendered ${routes.length} pages, ${aliasRoutes.length} legacy pages, a 404 page, and sitemap.xml.`);
 } finally {

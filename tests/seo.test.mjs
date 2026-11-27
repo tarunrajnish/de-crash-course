@@ -21,7 +21,7 @@ const { buildSearchIndex } = await server.ssrLoadModule("/src/lib/search.ts");
 const { renderPage } = await server.ssrLoadModule("/src/pages/index.ts");
 const { cheatsheetGroups } = await server.ssrLoadModule("/src/content/cheatsheet.ts");
 const home = new URL(pageMetadata({ name: "home" }).canonical);
-const routes = [{ name: "home" }, { name: "summary" }];
+const routes = [{ name: "home" }, { name: "about" }, { name: "summary" }];
 for (const course of courses) {
   routes.push({ name: "topic-list", courseId: course.id });
   for (const topic of course.topics) {
@@ -145,6 +145,13 @@ test("every page ships full HTML, unique metadata, and working internal links wi
     assert.equal(document.querySelector('meta[name="twitter:description"]').getAttribute("content"), metadata.description);
     assert.equal(document.querySelectorAll("h1").length, 1, pathname);
     assert.equal(document.querySelectorAll(".topic-card-visited").length, 0);
+    const crumbs = document.querySelector('[itemtype="https://schema.org/BreadcrumbList"]');
+    if (route.name === "topic-detail" || route.name === "topic-list" || route.name === "about") {
+      assert.ok(crumbs, `${pathname}: breadcrumb schema missing`);
+      const positions = [...crumbs.querySelectorAll('[itemtype="https://schema.org/ListItem"] [itemprop="position"]')]
+        .map(position => position.getAttribute("content"));
+      assert.deepEqual(positions, positions.map((_, index) => String(index + 1)), pathname);
+    }
 
     if (route.name === "home") {
       assert.equal(document.querySelectorAll("a.tile").length, courses.length);
@@ -345,7 +352,7 @@ test("topic navigation follows course order and omits unavailable neighbors at e
           continue;
         }
         assert.ok(link, `${topic.id}: missing ${direction} link`);
-        assert.equal(link.textContent, label);
+        assert.equal(link.textContent, `${label}: ${neighbor.title}`);
         assert.equal(link.getAttribute("aria-label"), `${label} topic: ${neighbor.title}`);
         assert.equal(link.getAttribute("href"),
           routeToPath({ name: "topic-detail", courseId: course.id, topicId: neighbor.id }));
@@ -376,5 +383,49 @@ test("the one-page summary covers every topic set and links to each concept", as
   assert.equal(document.querySelectorAll(".summary-card").length, courses.length);
   for (const course of courses) {
     assert.ok(document.querySelector(`a[href$="/course/${course.id}/"]`), course.id);
+  }
+});
+
+test("llms.txt provides a plain-text directory of every public topic and the editorial page", async () => {
+  const index = await readFile("dist/llms.txt", "utf8");
+  assert.match(index, /^# Data Engineering Crash Course/m);
+  assert.ok(index.includes(pageMetadata({ name: "about" }).canonical));
+  assert.ok(index.includes(pageMetadata({ name: "summary" }).canonical));
+  for (const course of courses) {
+    assert.ok(index.includes(pageMetadata({ name: "topic-list", courseId: course.id }).canonical), course.id);
+    for (const topic of course.topics) {
+      assert.ok(index.includes(pageMetadata({
+        name: "topic-detail", courseId: course.id, topicId: topic.id,
+      }).canonical), topic.id);
+    }
+  }
+  assert.match(index, /Formal per-topic technical review dates are not currently recorded/);
+  assert.match(index, /sitemap\.xml/);
+});
+
+test("about and lesson pages expose truthful author and review metadata", async () => {
+  const about = parseHTML(await readFile(outputFile(routeToPath({ name: "about" })), "utf8")).document;
+  assert.equal(about.querySelector('[itemtype="https://schema.org/AboutPage"] h1[itemprop="name"]').textContent,
+    "About this course");
+  assert.equal(about.querySelector('[itemtype="https://schema.org/Person"] [itemprop="name"]').textContent,
+    "Tarun Rajnish");
+  assert.match(about.body.textContent, /Formal per-topic technical review dates are not currently recorded/);
+
+  const course = courses[0];
+  for (const topic of course.topics) {
+    const path = routeToPath({ name: "topic-detail", courseId: course.id, topicId: topic.id });
+    const { document } = parseHTML(await readFile(outputFile(path), "utf8"));
+    const article = document.querySelector('[itemtype="https://schema.org/Article"]');
+    assert.equal(article.querySelector('[itemprop="headline"]').textContent, topic.title);
+    assert.equal(article.querySelector('[itemprop="description"]').textContent, topic.shortDescription);
+    assert.equal(article.querySelector('[itemprop="author"] [itemprop="name"]').getAttribute("content"), "Tarun Rajnish");
+    if (topic.lastReviewed) {
+      assert.equal(article.querySelector('[itemprop="dateModified"]').getAttribute("datetime"), topic.lastReviewed);
+    } else {
+      assert.match(article.querySelector(".topic-attribution").textContent, /Review date not recorded/);
+      assert.equal(article.querySelector('[itemprop="dateModified"]'), null);
+    }
+    const links = [...article.querySelectorAll(".topic-navigation-link")];
+    for (const link of links) assert.ok(link.textContent.includes(link.getAttribute("aria-label").replace(/^(Previous|Next) topic: /, "")));
   }
 });

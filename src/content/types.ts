@@ -41,6 +41,7 @@ export interface Topic {
   id: string;
   title: string;
   shortDescription: string;
+  lastReviewed?: string;
   glossary: GlossaryTerm[];
   animation?: string;
   animationCaption?: string;

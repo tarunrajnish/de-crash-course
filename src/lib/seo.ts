@@ -17,6 +17,9 @@ export function pageMetadata(route: Route) {
       title = `SQL, Python & data engineering cheatsheet | ${SITE_NAME}`;
       description = "Search quick SQL, MySQL, Python, and data engineering tips, common mistakes, code examples, and interview memory aids.";
     }
+  } else if (route.name === "about") {
+    title = `About the author and editorial approach | ${SITE_NAME}`;
+    description = "About Tarun Rajnish, the creator of Data Engineering Crash Course, and the site's content and review status.";
   } else if (route.name === "summary") {
     title = `One-page summary | ${SITE_NAME}`;
     description = "A one-page summary of every topic set: Spark, Delta Lake, modeling, orchestration, data quality, AI pipelines, and production engineering.";

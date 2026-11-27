@@ -7,11 +7,13 @@ import { renderTopicList } from "./topicList";
 import { renderTopicDetail } from "./topicDetail";
 import { renderCheatsheet } from "./cheatsheet";
 import { renderSummary } from "./summary";
+import { renderAbout } from "./about";
 
 export function renderPage(route: Route): HTMLElement {
   if (pageMetadata(route).found) {
     switch (route.name) {
       case "home": return renderHome();
+      case "about": return renderAbout();
       case "cheatsheet":
         if (import.meta.env.LOCAL_CHEATSHEET) return renderCheatsheet();
         break;

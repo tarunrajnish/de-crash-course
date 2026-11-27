@@ -1,5 +1,6 @@
 export type Route =
   | { name: "home" }
+  | { name: "about" }
   | { name: "cheatsheet" }
   | { name: "summary" }
   | { name: "topic-list"; courseId: string }
@@ -16,6 +17,7 @@ function parseSegments(path: string): Route {
   }
 
   if (parts.length === 0) return { name: "home" };
+  if (parts.length === 1 && parts[0] === "about") return { name: "about" };
   if (parts.length === 1 && parts[0] === "cheatsheet") return { name: "cheatsheet" };
   if (parts.length === 1 && parts[0] === "summary") return { name: "summary" };
   if (parts[0] === "course" && parts.length === 2) {
@@ -42,6 +44,8 @@ export function routeToPath(route: Route, base = import.meta.env.BASE_URL): stri
   switch (route.name) {
     case "home":
       return base;
+    case "about":
+      return `${base}about/`;
     case "cheatsheet":
       return `${base}cheatsheet/`;
     case "summary":

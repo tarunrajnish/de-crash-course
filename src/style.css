@@ -316,6 +316,36 @@ button.site-footer-link {
   overflow-wrap: anywhere;
 }
 
+.topic-attribution,
+.about-byline {
+  margin: -10px 0 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.topic-attribution a,
+.about-byline a,
+.about-content a {
+  color: var(--accent-dark);
+}
+
+.about-content {
+  max-width: 76ch;
+}
+
+.about-content h2 {
+  margin: 28px 0 8px;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.about-content p,
+.about-content li {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
 .analytics-consent {
   position: fixed;
   right: 18px;

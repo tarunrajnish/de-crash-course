@@ -123,7 +123,10 @@ function renderExample(example: WorkedExample, renderText: RenderText): HTMLElem
 
 export function renderTopicDetail(courseId: string, topicId: string): HTMLElement {
   const found = findTopic(courseId, topicId);
-  const root = el("div", { className: "page page-topic-detail" });
+  const root = el("article", {
+    className: "page page-topic-detail",
+    attrs: { itemscope: "", itemtype: "https://schema.org/Article" },
+  });
 
   if (!found) {
     root.appendChild(el("p", { text: "Topic not found." }));
@@ -141,8 +144,36 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
     { label: topic.title, route: { name: "topic-detail", courseId: course.id, topicId: topic.id } },
   ]));
 
-  root.appendChild(el("h1", { className: "page-title", text: topic.title }));
-  root.appendChild(el("p", { className: "page-subtitle", text: topic.shortDescription }));
+  root.appendChild(el("h1", {
+    className: "page-title",
+    text: topic.title,
+    attrs: { itemprop: "headline" },
+  }));
+  root.appendChild(el("p", {
+    className: "page-subtitle",
+    text: topic.shortDescription,
+    attrs: { itemprop: "description" },
+  }));
+  const attribution = el("p", {
+    className: "topic-attribution",
+    attrs: { itemprop: "author", itemscope: "", itemtype: "https://schema.org/Person" },
+  });
+  attribution.appendChild(document.createTextNode("By "));
+  attribution.appendChild(el("a", {
+    text: "Tarun Rajnish",
+    attrs: { href: routeToPath({ name: "about" }), itemprop: "url" },
+  }));
+  attribution.appendChild(el("meta", { attrs: { itemprop: "name", content: "Tarun Rajnish" } }));
+  if (topic.lastReviewed) {
+    attribution.appendChild(document.createTextNode(" · Reviewed "));
+    attribution.appendChild(el("time", {
+      text: topic.lastReviewed,
+      attrs: { itemprop: "dateModified", datetime: topic.lastReviewed },
+    }));
+  } else {
+    attribution.appendChild(document.createTextNode(" · Review date not recorded"));
+  }
+  root.appendChild(attribution);
 
   if (SHOW_ANIMATIONS && topic.animation) {
     const figure = el("figure", { className: "animation-figure" });
@@ -157,7 +188,10 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
     root.appendChild(figure);
   }
 
-  const contentWrap = el("div", { className: "content-wrap" });
+  const contentWrap = el("div", {
+    className: "content-wrap",
+    attrs: { itemprop: "articleBody" },
+  });
   for (const section of topic.sections) contentWrap.appendChild(renderSection(section, renderText));
   root.appendChild(contentWrap);
 
@@ -198,7 +232,7 @@ export function renderTopicDetail(courseId: string, topicId: string): HTMLElemen
     if (!neighbor) continue;
     navigation.appendChild(el("a", {
       className: `topic-navigation-link topic-navigation-link--${direction}`,
-      text: label,
+      text: `${label}: ${neighbor.title}`,
       attrs: {
         href: routeToPath({ name: "topic-detail", courseId: course.id, topicId: neighbor.id }),
         rel: direction,
